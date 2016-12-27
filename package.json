@@ -1,0 +1,24 @@
+{
+  "name": "soajs.urac.driver",
+  "description": "soajs URAC Driver",
+  "version": "0.1.0",
+  "author": {
+    "name": "soajs team",
+    "email": "team@soajs.org"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:soajs/soajs.urac.driver.git"
+  },
+  "license": "Apache-2.0",
+  "engines": {
+    "node": "*"
+  },
+  "scripts": {
+    "test": "grunt test"
+  },
+  "devDependencies": {
+  },
+  "dependencies": {
+  }
+}
