@@ -1,6 +1,7 @@
 "use strict";
 var driverConfig = require('./config.js');
 var fs = require("fs");
+var merge = require('merge');
 
 var userCollectionName = "users";
 var groupsCollectionName = "groups";
@@ -62,6 +63,176 @@ function findRecord(soajs, condition, mainCb, callbck) {
 	});
 }
 
+function findGroups(soajs, record, callbck) {
+	//Get Groups config
+	var grpCriteria = {
+		"code": {
+			"$in": record.groups
+		}
+	};
+	if (record.tenant) {
+		grpCriteria.tenant = record.tenant;
+	}
+	var combo = {
+		collection: groupsCollectionName,
+		condition: grpCriteria
+	};
+	
+	driver.model.findEntries(soajs, combo, function (err, groups) {
+		record.groupsConfig = null;
+		if (err) {
+			soajs.log.error(err);
+		}
+		else {
+			record.groupsConfig = groups;
+		}
+		callbck(record);
+	});
+}
+
+function objectIsEnv(obj) {
+	if (obj) {
+		if (JSON.stringify(obj) === '{}') {
+			return false;
+		}
+		if (!Object.hasOwnProperty.call(obj, 'access') && !obj.apis && !obj.apisRegExp && !obj.apisPermission) {
+			if (obj.get || obj.post || obj.put || obj.delete) {
+				return false;
+			}
+			return true;
+		}
+	}
+	return false;
+}
+
+function assureConfig(soajs, urac, cb) {
+	// same as session.setURAC
+	if (!urac) {
+		if (cb && (typeof cb === "function")) {
+			return cb();
+		}
+		else {
+			return;
+		}
+	}
+	var regEnvironment = (process.env.SOAJS_ENV || "dev");
+	regEnvironment = regEnvironment.toLowerCase();
+	
+	//NOTE: we need to assure config = {packages: {}, keys : {}}
+	if (!urac.config) {
+		urac.config = {};
+	}
+	if (!urac.config.packages) {
+		urac.config.packages = {};
+	}
+	else {
+		for (var packageCode in urac.config.packages) {
+			if (Object.hasOwnProperty.call(urac.config.packages, packageCode)) {
+				var ACL = urac.config.packages[packageCode].acl;
+				urac.config.packages[packageCode].acl_all_env = urac.config.packages[packageCode].acl;
+				if (ACL && typeof ACL === "object") {
+					if (ACL[regEnvironment]) {
+						if (objectIsEnv(ACL[regEnvironment])) {
+							urac.config.packages[packageCode].acl = ACL[regEnvironment];
+						}
+					}
+				}
+			}
+		}
+	}
+	if (!urac.config.keys) {
+		urac.config.keys = {};
+	}
+	else {
+		//urac.config.keys[key].acl
+		for (var key in urac.config.keys) {
+			if (Object.hasOwnProperty.call(urac.config.keys, key)) {
+				var ACL = urac.config.keys[key].acl;
+				urac.config.keys[key].acl_all_env = urac.config.keys[key].acl;
+				if (ACL && typeof ACL === "object") {
+					if (ACL[regEnvironment]) {
+						if (!objectIsEnv(ACL[regEnvironment])) {
+							urac.config.keys[key].acl = ACL[regEnvironment];
+						}
+					}
+				}
+			}
+		}
+	}
+	
+	//Groups ACL
+	// - merge all group.config.keys[key].acl
+	// - merge all group.config.packages[packageCode].acl
+	if (urac.groupsConfig) {
+		var mergedInfo = {"keys": {}, "packages": {}};
+		for (var i = 0; i <= urac.groupsConfig.length; i++) {
+			var group = urac.groupsConfig[i];
+			if (group && group.config) {
+				if (group.config.keys) {
+					//merge all keys ACL
+					for (var key in group.config.keys) {
+						if (Object.hasOwnProperty.call(group.config.keys, key)) {
+							var ACL = group.config.keys[key].acl;
+							if (ACL) {
+								if (mergedInfo.keys[key] && mergedInfo.keys[key].acl_all_env) {
+									mergedInfo.keys[key].acl_all_env = merge.recursive(true, mergedInfo.keys[key].acl_all_env, ACL);
+								}
+								else {
+									mergedInfo.keys[key] = {
+										"acl_all_env": ACL
+									};
+								}
+								
+								if (mergedInfo.keys[key] && mergedInfo.keys[key].acl) {
+									mergedInfo.keys[key].acl = mergedInfo.keys[key].acl_all_env[regEnvironment];
+								}
+								else {
+									mergedInfo.keys[key] = {
+										"acl": mergedInfo.keys[key].acl_all_env[regEnvironment]
+									};
+								}
+							}
+						}
+					}
+				}
+				if (group.config.packages) {
+					//merge all packages ACL
+					for (var packageCode in group.config.packages) {
+						if (Object.hasOwnProperty.call(group.config.packages, packageCode)) {
+							var ACL = group.config.packages[packageCode].acl;
+							if (ACL) {
+								if (mergedInfo.packages[packageCode] && mergedInfo.packages[packageCode].acl_all_env) {
+									mergedInfo.packages[packageCode].acl_all_env = merge.recursive(true, mergedInfo.packages[packageCode].acl_all_env, ACL);
+								}
+								else {
+									mergedInfo.packages[packageCode] = {"acl_all_env": ACL};
+								}
+								
+								if (mergedInfo.packages[packageCode] && mergedInfo.packages[packageCode].acl) {
+									mergedInfo.packages[packageCode].acl = mergedInfo.packages[packageCode].acl_all_env[regEnvironment];
+								}
+								else {
+									mergedInfo.packages[packageCode] = {
+										"acl": mergedInfo.packages[packageCode].acl_all_env[regEnvironment]
+									};
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		urac.groupsConfig = mergedInfo;
+	}
+	
+	if (cb && (typeof cb === "function")) {
+		return cb();
+	}
+	else {
+		return;
+	}
+}
+
 driver = {
 	"model": null,
 	"login": function (soajs, data, cb) {
@@ -78,6 +249,7 @@ driver = {
 			delete criteria.username;
 			criteria.email = username;
 		}
+		
 		initBLModel(soajs, function () {
 			driver.model.initConnection(soajs);
 			findRecord(soajs, criteria, cb, function (record) {
@@ -90,49 +262,55 @@ driver = {
 					delete record.password;
 					delete record.socialId;
 					
-					if (!record.groups || !Array.isArray(record.groups) || record.groups.length === 0) {
+					if (record.groups && Array.isArray(record.groups) && record.groups.length !== 0) {
+						//Get Groups config
+						findGroups(soajs, record, function (record) {
+							driver.model.closeConnection(soajs);
+							return cb(null, record);
+						});
+					}
+					else {
 						driver.model.closeConnection(soajs);
 						return cb(null, record);
 					}
 					
-					//Get Groups config
-					var grpCriteria = {
-						"code": {"$in": record.groups}
-					};
-					if (record.tenant) {
-						grpCriteria.tenant = record.tenant;
-					}
-					var combo = {
-						collection: groupsCollectionName,
-						condition: grpCriteria
-					};
-					
-					driver.model.findEntries(soajs, combo, function (err, groups) {
-						driver.model.closeConnection(soajs);
-						record.groupsConfig = null;
-						if (err) {
-							soajs.log.error(err);
-						}
-						else {
-							record.groupsConfig = groups;
-						}
-						return cb(null, record);
-					});
 				});
 				
 			});
-			
 		});
 	},
 	"getRecord": function (soajs, data, cb) {
-		var id = data.id;
+		driver.model.initConnection(soajs);
+		var id;
+		try {
+			id = driver.model.validateId(soajs, data.id);
+		}
+		catch (e) {
+			return cb(null, null);
+		}
+		
 		var criteria = {
 			'_id': id
 		};
-		driver.model.initConnection(soajs);
+		
 		findRecord(soajs, criteria, cb, function (record) {
-			driver.model.closeConnection(soajs);
-			return cb(null, record);
+			delete record.password;
+			
+			if (record.groups && Array.isArray(record.groups) && record.groups.length !== 0) {
+				//Get Groups config
+				findGroups(soajs, record, function (record) {
+					returnUser(record);
+				});
+			}
+			else {
+				returnUser(record);
+			}
+			
+			function returnUser(record) {
+				assureConfig(soajs, record);
+				driver.model.closeConnection(soajs);
+				return cb(null, record);
+			}
 		});
 	}
 };

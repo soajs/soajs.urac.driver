@@ -16,15 +16,15 @@ module.exports = {
 		soajs.mongoDb.closeDb();
 	},
 	
-	"validateId": function (soajs, id, cb) {
+	"validateId": function (soajs, id) {
 		var id1;
 		try {
 			id1 = soajs.mongoDb.ObjectId(id);
-			return cb(null, id1);
+			return id1;
 		}
 		catch (e) {
 			soajs.log.error(e);
-			return cb(e);
+			throw e;
 		}
 	},
 	
