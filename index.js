@@ -64,143 +64,146 @@ function findRecord(soajs, condition, mainCb, callbck) {
 	});
 }
 
+function customLog(soajs, user, cb) {
+	var mode = soajs.inputmaskData.strategy;
+	
+	var filePath = __dirname + "/lib/drivers/" + mode + ".js";
+	var socialNetworkDriver = require(filePath);
+	
+	socialNetworkDriver.mapProfile(user, function (error, profile) {
+
+		initBLModel(soajs, function () {
+			driver.model.initConnection(soajs);
+
+			var userRecord = {
+				"username": profile.username,
+				"password": profile.password,
+				"firstName": profile.firstName,
+				"lastName": profile.lastName,
+				"email": profile.email,
+				'status': 'active',
+				'ts': new Date().getTime(),
+				'groups': [],
+				'config': {
+					'packages': {},
+					'keys': {}
+				},
+				'profile': {},
+				"socialId": {}
+			};
+
+			userRecord.socialId[mode] = {
+				ts: new Date().getTime(),
+				"id": user.profile.id
+			};
+
+			var condition = {
+				$or: []
+			};
+			if (userRecord.email) {
+				condition["$or"].push({'email': userRecord.email});
+			}
+			var c = {};
+			c['socialId.' + mode + '.id'] = user.profile.id;
+			condition["$or"].push(c);
+
+			var combo = {
+				collection: userCollectionName,
+				condition: condition
+			};
+
+			driver.model.findEntry(soajs, combo, function (err, record) {
+				if (err) {
+					soajs.log.error(err);
+					return cb({"code": 400, "msg": soajs.config.errors[400]});
+				}
+
+				if (record) {
+					// update record
+					if (!record.socialId) {
+						record.socialId = {};
+					}
+					if (!record.socialId[mode]) {
+						record.socialId[mode] = {
+							ts: new Date().getTime()
+						};
+					}
+
+					record.socialId[mode].id = user.profile.id;
+					record.socialId[mode].accessToken = user.accessToken;
+					if (user.refreshToken) { // first time application authorized
+						record.socialId[mode].refreshToken = user.refreshToken;
+					}
+
+					var comboUpdate = {
+						collection: userCollectionName,
+						record: record
+					};
+					driver.model.saveEntry(soajs, comboUpdate, function (err, ret) {
+						driver.model.closeConnection(soajs);
+						if (err) {
+							soajs.log.error(err);
+						}
+						return cb(null, record);
+					});
+				}
+				else {
+					userRecord.socialId[mode].accessToken = user.accessToken;
+					if (user.refreshToken) { // first time application authorized
+						userRecord.socialId[mode].refreshToken = user.refreshToken;
+					}
+
+					var comboInsert = {
+						collection: userCollectionName,
+						record: userRecord
+					};
+					driver.model.insertEntry(soajs, comboInsert, function (err, results) {
+						driver.model.closeConnection(soajs);
+						var data = {config: soajs.config, error: err, code: 400};
+						if (err) {
+							soajs.log.error(err);
+						}
+						return cb(null, results[0]);
+					});
+				}
+			});
+
+		});
+	});
+}
+
 driver = {
 	"model": null,
-	"passportLibInit" : function(req,cb) {
+	"passportLibInit": function (req, cb) {
 		passportLib.init(req, cb);
 	},
-	"passportLibInitAuth" : function(req,response,passport) {
-		passportLib.initAuth(req, response,passport);
+	"passportLibInitAuth": function (req, response, passport) {
+		passportLib.initAuth(req, response, passport);
 	},
-	"passportLibAuthenticate" : function(req, res, passport, initBLModel) {
-		passportLib.authenticate(req, res, passport, initBLModel);
-	},
-	"customLogin": function (soajs, data, cb) {
-		var user = data.user;
-		var mode = data.strategy;
-		var filePath = __dirname + "/lib/drivers/" + mode + ".js";
-		var socialNetworkDriver = require(filePath);
+	"passportLibAuthenticate": function (req, res, passport, cb) {
+		// passportLib.authenticate(req, res, passport, initBLModel, cb);
+		var authentication = req.soajs.inputmaskData.strategy;
 		
-		socialNetworkDriver.mapProfile(user, function (error, profile) {
-			
-			initBLModel(soajs, function () {
-				driver.model.initConnection(soajs);
-				
-				var userRecord = {
-					"username": profile.username,
-					"password": profile.password,
-					"firstName": profile.firstName,
-					"lastName": profile.lastName,
-					"email": profile.email,
-					'status': 'active',
-					'ts': new Date().getTime(),
-					'groups': [],
-					'config': {
-						'packages': {},
-						'keys': {}
-					},
-					'profile': {},
-					"socialId": {}
-				};
-				
-				userRecord.socialId[mode] = {
-					ts: new Date().getTime(),
-					"id": user.profile.id
-				};
-				
-				var condition = {
-					$or: []
-				};
-				if (userRecord.email) {
-					condition["$or"].push({'email': userRecord.email});
-				}
-				var c = {};
-				c['socialId.' + mode + '.id'] = user.profile.id;
-				condition["$or"].push(c);
-				
-				var combo = {
-					collection: userCollectionName,
-					condition: condition
-				};
-				
-				function setSession(record, setURACCallback) {
-					delete record.password;
-					var returnRecord = JSON.parse(JSON.stringify(record));
-					record.socialLogin = {};
-					record.socialLogin = record.socialId[mode];
-					record.socialLogin.strategy = mode;
-					delete record.socialId;
-					delete returnRecord.socialId;
-					delete returnRecord.socialLogin;
-					if (soajs.session) {
-						return setURACCallback(null, record);
-					}
-					else {
-						return cb(null, record);
-					}
-				}
-				
-				driver.model.findEntry(soajs, combo, function (err, record) {
+		passportLib.getDriver(req, false, function (err, driver) {
+			driver.preAuthenticate(req, function (error) {
+				passport.authenticate(authentication, {session: false}, function (err, user, info) {
 					if (err) {
-						soajs.log.error(err);
-						return cb({"code": 400, "msg": soajs.config.errors[400]});
+						req.soajs.log.error(err);
+						return cb({"code": 499, "msg": err.toString()});
+					}
+					if (!user) {
+						cb({"code": 403, "msg": req.soajs.config.errors[403]});
 					}
 					
-					if (record) {
-						// update record
-						if (!record.socialId) {
-							record.socialId = {};
-						}
-						if (!record.socialId[mode]) {
-							record.socialId[mode] = {
-								ts: new Date().getTime()
-							};
-						}
-						
-						record.socialId[mode].id = user.profile.id;
-						record.socialId[mode].accessToken = user.accessToken;
-						if (user.refreshToken) { // first time application authorized
-							record.socialId[mode].refreshToken = user.refreshToken;
-						}
-						
-						var comboUpdate = {
-							collection: userCollectionName,
-							record: record
-						};
-						driver.model.saveEntry(soajs, comboUpdate, function (err, ret) {
-							driver.model.closeConnection(soajs);
-							if (err) {
-								soajs.log.error(err);
-							}
-							setSession(record, function(error, record){
-								return cb(null, record);
-							});
-						});
-					}
-					else {
-						userRecord.socialId[mode].accessToken = user.accessToken;
-						if (user.refreshToken) { // first time application authorized
-							userRecord.socialId[mode].refreshToken = user.refreshToken;
-						}
-						
-						var comboInsert = {
-							collection: userCollectionName,
-							record: userRecord
-						};
-						driver.model.insertEntry(soajs, comboInsert, function (err, results) {
-							driver.model.closeConnection(soajs);
-							var data = {config: soajs.config, error: err, code: 400};
-							checkIfError(req, cb, data, false, function () {
-								setSession(results[0], function(error, record){
-									return cb(null, record);
-								});
-							});
-						});
-					}
-				});
+					req.soajs.inputmaskData.user = user;
+					customLog(req.soajs, user, function (error, data) {
+						cb(null, data);
+					});
+				})(req, res);
 				
 			});
 		});
+		
 	},
 	"login": function (soajs, data, cb) {
 		var utils = require("./lib/utils.js");
