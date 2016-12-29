@@ -65,17 +65,14 @@ function findRecord(soajs, condition, mainCb, callbck) {
 	});
 }
 
-function customLog(soajs, user, cb) {
+function saveUser(soajs, user, cb) {
 	var mode = soajs.inputmaskData.strategy;
-	
 	var filePath = __dirname + "/lib/drivers/" + mode + ".js";
 	var socialNetworkDriver = require(filePath);
-	
 	socialNetworkDriver.mapProfile(user, function (error, profile) {
-
 		initBLModel(soajs, function () {
 			driver.model.initConnection(soajs);
-
+			
 			var userRecord = {
 				"username": profile.username,
 				"password": profile.password,
@@ -92,12 +89,12 @@ function customLog(soajs, user, cb) {
 				'profile': {},
 				"socialId": {}
 			};
-
+			
 			userRecord.socialId[mode] = {
 				ts: new Date().getTime(),
 				"id": user.profile.id
 			};
-
+			
 			var condition = {
 				$or: []
 			};
@@ -107,18 +104,19 @@ function customLog(soajs, user, cb) {
 			var c = {};
 			c['socialId.' + mode + '.id'] = user.profile.id;
 			condition["$or"].push(c);
-
+			
 			var combo = {
 				collection: userCollectionName,
 				condition: condition
 			};
-
+			
 			driver.model.findEntry(soajs, combo, function (err, record) {
 				if (err) {
 					soajs.log.error(err);
+					driver.model.closeConnection(soajs);
 					return cb({"code": 400, "msg": soajs.config.errors[400]});
 				}
-
+				
 				if (record) {
 					// update record
 					if (!record.socialId) {
@@ -129,13 +127,13 @@ function customLog(soajs, user, cb) {
 							ts: new Date().getTime()
 						};
 					}
-
+					
 					record.socialId[mode].id = user.profile.id;
 					record.socialId[mode].accessToken = user.accessToken;
 					if (user.refreshToken) { // first time application authorized
 						record.socialId[mode].refreshToken = user.refreshToken;
 					}
-
+					
 					var comboUpdate = {
 						collection: userCollectionName,
 						record: record
@@ -153,22 +151,22 @@ function customLog(soajs, user, cb) {
 					if (user.refreshToken) { // first time application authorized
 						userRecord.socialId[mode].refreshToken = user.refreshToken;
 					}
-
+					
 					var comboInsert = {
 						collection: userCollectionName,
 						record: userRecord
 					};
 					driver.model.insertEntry(soajs, comboInsert, function (err, results) {
 						driver.model.closeConnection(soajs);
-						var data = {config: soajs.config, error: err, code: 400};
 						if (err) {
 							soajs.log.error(err);
+							return cb({"code": 400, "msg": soajs.config.errors[400]});
 						}
 						return cb(null, results[0]);
 					});
 				}
 			});
-
+			
 		});
 	});
 }
@@ -352,7 +350,6 @@ driver = {
 		passportLib.initAuth(req, response, passport);
 	},
 	"passportLibAuthenticate": function (req, res, passport, cb) {
-		// passportLib.authenticate(req, res, passport, initBLModel, cb);
 		var authentication = req.soajs.inputmaskData.strategy;
 		
 		passportLib.getDriver(req, false, function (err, driver) {
@@ -367,7 +364,7 @@ driver = {
 					}
 					
 					req.soajs.inputmaskData.user = user;
-					customLog(req.soajs, user, function (error, data) {
+					saveUser(req.soajs, user, function (error, data) {
 						cb(null, data);
 					});
 				})(req, res);
