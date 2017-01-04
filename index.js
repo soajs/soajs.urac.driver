@@ -373,11 +373,11 @@ driver = {
 		});
 		
 	},
+	
 	"login": function (soajs, data, cb) {
 		var utils = require("./lib/utils.js");
 		var username = data.username;
 		var password = data.password;
-		
 		var criteria = {
 			'username': username,
 			'status': 'active'
@@ -391,8 +391,11 @@ driver = {
 		initBLModel(soajs, function () {
 			driver.model.initConnection(soajs);
 			findRecord(soajs, criteria, cb, function (record) {
-				
-				utils.comparePasswd(soajs.servicesConfig.urac, password, record.password, soajs.config, function (err, response) {
+				var myConfig = driverConfig;
+				if (soajs.config) {
+					myConfig = soajs.config;
+				}
+				utils.comparePasswd(soajs.servicesConfig.urac, password, record.password, myConfig, function (err, response) {
 					if (err || !response) {
 						driver.model.closeConnection(soajs);
 						return cb(413);
@@ -424,7 +427,7 @@ driver = {
 			id = driver.model.validateId(soajs, data.id);
 		}
 		catch (e) {
-			return cb(null, null);
+			return cb(411);
 		}
 		
 		var criteria = {

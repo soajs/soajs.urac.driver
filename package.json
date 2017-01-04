@@ -20,6 +20,12 @@
   "devDependencies": {
   },
   "dependencies": {
-    "merge": "*"
+    "merge": "*",
+    "passport": "*",
+    "passport-facebook": "*",
+    "passport-github": "*",
+    "passport-google-oauth": "*",
+    "passport-local": "*",
+    "passport-twitter": "*"
   }
 }
