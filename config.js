@@ -4,6 +4,13 @@ module.exports = {
 	"model": 'mongo',
 	"hashIterations": 1024,
 	"seedLength": 32,
+	"ldap": {
+		host: 'ldap://127.0.0.1',
+		port: 10389,
+		baseDN: 'ou=users,ou=system',
+		adminUser: 'uid=admin,ou=system',
+		adminPassword: 'secret'
+	},
 	"errors": {
 		399: "Missing Service config. Contact system Admin",
 		400: "Database connection error",
