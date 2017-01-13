@@ -8,7 +8,7 @@ var passportLib = require('./lib/passport.js');
 var userCollectionName = "users";
 var groupsCollectionName = "groups";
 
-var ldap = require('ldapjs');
+var ActiveDirectory = require('activedirectory');
 
 var model = null;
 var driver;
@@ -566,8 +566,6 @@ driver = {
 		
 		var filter = 'uid=' + username;
 		var fullFilter = 'uid=' + username + ',' + baseDN;
-		
-		var ActiveDirectory = require('activedirectory');
 		
 		var ad = new ActiveDirectory({
 			url: url,
