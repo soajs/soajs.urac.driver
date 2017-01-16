@@ -82,11 +82,20 @@ var lib = {
 				611: "Invalid tenant id provided"
 			},
 			"schema": {
-				"commonFields": {},
+				"commonFields": {
+					"model": {
+						"source": ['query.model'],
+						"required": false,
+						"validation": {
+							"type": "string"
+						}
+					}
+				},
 				"/login": {
 					"_apiInfo": {
 						"l": "login"
 					},
+					"commonFields": ["model"],
 					"username": {
 						"source": ['body.username'],
 						"required": true,
@@ -106,6 +115,7 @@ var lib = {
 					"_apiInfo": {
 						"l": "Get User"
 					},
+					"commonFields": ["model"],
 					"id": {
 						"source": ['query.id'],
 						"required": true,
@@ -254,6 +264,9 @@ var lib = {
 					'password': req.soajs.inputmaskData['password']
 				};
 				myDriver.login(req.soajs, data, function (err, record) {
+					if (err) {
+						req.soajs.log.error(err);
+					}
 					return res.json(req.soajs.buildResponse(null, record));
 				});
 				
@@ -342,10 +355,13 @@ describe("testing driver", function () {
 	});
 	
 	describe("login user method", function () {
+		
 		it("login with username", function (done) {
 			
 			var params = {
-				qs: {},
+				qs: {
+					"model": "mongo"
+				},
 				form: {
 					"username": "user1",
 					"password": "123456"
@@ -389,6 +405,23 @@ describe("testing driver", function () {
 			executeMyRequest(params, 'login', 'post', function (body) {
 				console.log(body);
 				// assert.ok(body.data);
+				done();
+			});
+			
+		});
+		
+		it("wrong model", function (done) {
+			var params = {
+				qs: {
+					"model": "mongo1"
+				},
+				form: {
+					"username": "user1",
+					"password": "123456"
+				}
+			};
+			
+			executeMyRequest(params, 'login', 'post', function (body) {
 				done();
 			});
 			

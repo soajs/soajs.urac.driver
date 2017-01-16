@@ -28,11 +28,7 @@ module.exports = {
 			throw e;
 		}
 	},
-	
-	"countEntries": function (soajs, combo, cb) {
-		soajs.mongoDb.count(combo.collection, combo.condition || {}, cb);
-	},
-	
+
 	"findEntries": function (soajs, combo, cb) {
 		soajs.mongoDb.find(combo.collection, combo.condition || {}, combo.fields || null, combo.options || null, cb);
 	},
@@ -47,10 +43,6 @@ module.exports = {
 	
 	"insertEntry": function (soajs, combo, cb) {
 		soajs.mongoDb.insert(combo.collection, combo.record, cb);
-	},
-	
-	"removeEntry": function (soajs, combo, cb) {
-		soajs.mongoDb.remove(combo.collection, combo.condition, cb);
 	},
 	
 	"updateEntry": function (soajs, combo, cb) {
