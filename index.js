@@ -236,6 +236,120 @@ var utilities = {
 	}
 };
 
+function saveUser(soajs, mode, user, cb) {
+	var filePath = __dirname + "/lib/drivers/" + mode + ".js";
+	var socialNetworkDriver = require(filePath);
+	socialNetworkDriver.mapProfile(user, function (error, profile) {
+		driver.model.initConnection(soajs);
+		
+		function saveSocialRecord(profile, mode) {
+			var userRecord = {
+				"username": profile.username,
+				"password": profile.password,
+				"firstName": profile.firstName,
+				"lastName": profile.lastName,
+				"email": profile.email,
+				'status': 'active',
+				'ts': new Date().getTime(),
+				'groups': [],
+				'config': {
+					'packages': {},
+					'keys': {}
+				},
+				'profile': {},
+				"socialId": {},
+				"tenant": {
+					"id": soajs.tenant.id,
+					"code": soajs.tenant.code
+				}
+			};
+			
+			userRecord.socialId[mode] = {
+				ts: new Date().getTime(),
+				"id": profile.id
+			};
+			
+			var condition = {
+				$or: []
+			};
+			if (userRecord.email) {
+				condition["$or"].push({'email': userRecord.email});
+			}
+			var c = {};
+			c['socialId.' + mode + '.id'] = profile.id;
+			condition["$or"].push(c);
+			
+			var combo = {
+				collection: userCollectionName,
+				condition: condition
+			};
+			
+			driver.model.findEntry(soajs, combo, function (err, record) {
+				if (err) {
+					soajs.log.error(err);
+					driver.model.closeConnection(soajs);
+					return cb({"code": 400, "msg": soajs.config.errors[400]});
+				}
+				
+				if (record) {
+					// update record
+					if (!record.socialId) {
+						record.socialId = {};
+					}
+					if (!record.socialId[mode]) {
+						record.socialId[mode] = {
+							ts: new Date().getTime()
+						};
+					}
+					
+					record.socialId[mode].id = profile.id;
+					if (user.accessToken) {
+						record.socialId[mode].accessToken = user.accessToken;
+					}
+					if (user.refreshToken) { // first time application authorized
+						record.socialId[mode].refreshToken = user.refreshToken;
+					}
+					
+					var comboUpdate = {
+						collection: userCollectionName,
+						record: record
+					};
+					driver.model.saveEntry(soajs, comboUpdate, function (err, ret) {
+						driver.model.closeConnection(soajs);
+						if (err) {
+							soajs.log.error(err);
+						}
+						return cb(null, record);
+					});
+				}
+				else {
+					if (user.accessToken) {
+						userRecord.socialId[mode].accessToken = user.accessToken;
+					}
+					if (user.refreshToken) { // first time application authorized
+						userRecord.socialId[mode].refreshToken = user.refreshToken;
+					}
+					
+					var comboInsert = {
+						collection: userCollectionName,
+						record: userRecord
+					};
+					driver.model.insertEntry(soajs, comboInsert, function (err, results) {
+						driver.model.closeConnection(soajs);
+						if (err) {
+							soajs.log.error(err);
+							return cb({"code": 400, "msg": soajs.config.errors[400]});
+						}
+						return cb(null, results[0]);
+					});
+				}
+			});
+		}
+		
+		saveSocialRecord(profile, mode);
+	});
+}
+
 driver = {
 	"model": null,
 	"passportLibInit": function (req, cb) {
@@ -245,109 +359,6 @@ driver = {
 		passportLib.initAuth(req, response, passport);
 	},
 	"passportLibAuthenticate": function (req, res, passport, cb) {
-		function saveUser(soajs, user, cb) {
-			var mode = soajs.inputmaskData.strategy;
-			var filePath = __dirname + "/lib/drivers/" + mode + ".js";
-			var socialNetworkDriver = require(filePath);
-			socialNetworkDriver.mapProfile(user, function (error, profile) {
-				driver.model.initConnection(soajs);
-				
-				var userRecord = {
-					"username": profile.username,
-					"password": profile.password,
-					"firstName": profile.firstName,
-					"lastName": profile.lastName,
-					"email": profile.email,
-					'status': 'active',
-					'ts': new Date().getTime(),
-					'groups': [],
-					'config': {
-						'packages': {},
-						'keys': {}
-					},
-					'profile': {},
-					"socialId": {}
-				};
-				
-				userRecord.socialId[mode] = {
-					ts: new Date().getTime(),
-					"id": user.profile.id
-				};
-				
-				var condition = {
-					$or: []
-				};
-				if (userRecord.email) {
-					condition["$or"].push({'email': userRecord.email});
-				}
-				var c = {};
-				c['socialId.' + mode + '.id'] = user.profile.id;
-				condition["$or"].push(c);
-				
-				var combo = {
-					collection: userCollectionName,
-					condition: condition
-				};
-				
-				driver.model.findEntry(soajs, combo, function (err, record) {
-					if (err) {
-						soajs.log.error(err);
-						driver.model.closeConnection(soajs);
-						return cb({"code": 400, "msg": soajs.config.errors[400]});
-					}
-					
-					if (record) {
-						// update record
-						if (!record.socialId) {
-							record.socialId = {};
-						}
-						if (!record.socialId[mode]) {
-							record.socialId[mode] = {
-								ts: new Date().getTime()
-							};
-						}
-						
-						record.socialId[mode].id = user.profile.id;
-						record.socialId[mode].accessToken = user.accessToken;
-						if (user.refreshToken) { // first time application authorized
-							record.socialId[mode].refreshToken = user.refreshToken;
-						}
-						
-						var comboUpdate = {
-							collection: userCollectionName,
-							record: record
-						};
-						driver.model.saveEntry(soajs, comboUpdate, function (err, ret) {
-							driver.model.closeConnection(soajs);
-							if (err) {
-								soajs.log.error(err);
-							}
-							return cb(null, record);
-						});
-					}
-					else {
-						userRecord.socialId[mode].accessToken = user.accessToken;
-						if (user.refreshToken) { // first time application authorized
-							userRecord.socialId[mode].refreshToken = user.refreshToken;
-						}
-						
-						var comboInsert = {
-							collection: userCollectionName,
-							record: userRecord
-						};
-						driver.model.insertEntry(soajs, comboInsert, function (err, results) {
-							driver.model.closeConnection(soajs);
-							if (err) {
-								soajs.log.error(err);
-								return cb({"code": 400, "msg": soajs.config.errors[400]});
-							}
-							return cb(null, results[0]);
-						});
-					}
-				});
-			});
-		}
-		
 		var authentication = req.soajs.inputmaskData.strategy;
 		
 		passportLib.getDriver(req, false, function (err, driver) {
@@ -363,8 +374,10 @@ driver = {
 					
 					req.soajs.inputmaskData.user = user;
 					initBLModel(req.soajs, function (err) {
-						saveUser(req.soajs, user, function (error, data) {
-							cb(null, data);
+						var mode = req.soajs.inputmaskData.strategy;
+						
+						saveUser(req.soajs, mode, user, function (error, data) {
+							cb(error, data);
 						});
 					});
 				})(req, res);
@@ -459,110 +472,19 @@ driver = {
 		});
 	},
 	"ldapLogin": function (soajs, data, cb) {
-		function saveProfile(soajs, profile, cb) {
-			
-			initBLModel(soajs, function () {
-				driver.model.initConnection(soajs);
-				
-				var userRecord = {
-					"username": profile.username,
-					"password": profile.password,
-					"firstName": profile.firstName,
-					"lastName": profile.lastName,
-					"email": profile.email,
-					'status': 'active',
-					'ts': new Date().getTime(),
-					'groups': [],
-					'config': {
-						'packages': {},
-						'keys': {}
-					},
-					'profile': {},
-					"socialId": {}
-				};
-				
-				var mode = 'ldap';
-				
-				userRecord.socialId[mode] = {
-					ts: new Date().getTime(),
-					"id": profile.id
-				};
-				
-				var condition = {
-					$or: []
-				};
-				if (userRecord.email) {
-					condition["$or"].push({'email': userRecord.email});
-				}
-				var c = {};
-				c['socialId.' + mode + '.id'] = profile.id;
-				condition["$or"].push(c);
-				
-				var combo = {
-					collection: userCollectionName,
-					condition: condition
-				};
-				
-				driver.model.findEntry(soajs, combo, function (err, record) {
-					if (err) {
-						soajs.log.error(err);
-						driver.model.closeConnection(soajs);
-						return cb({"code": 400, "msg": soajs.config.errors[400]});
-					}
-					
-					if (record) {
-						// update record
-						if (!record.socialId) {
-							record.socialId = {};
-						}
-						if (!record.socialId[mode]) {
-							record.socialId[mode] = {
-								ts: new Date().getTime()
-							};
-						}
-						
-						var comboUpdate = {
-							collection: userCollectionName,
-							record: record
-						};
-						driver.model.saveEntry(soajs, comboUpdate, function (err, ret) {
-							driver.model.closeConnection(soajs);
-							if (err) {
-								soajs.log.error(err);
-							}
-							return cb(null, record);
-						});
-					}
-					else {
-						
-						var comboInsert = {
-							collection: userCollectionName,
-							record: userRecord
-						};
-						driver.model.insertEntry(soajs, comboInsert, function (err, results) {
-							driver.model.closeConnection(soajs);
-							if (err) {
-								soajs.log.error(err);
-								return cb({"code": 400, "msg": soajs.config.errors[400]});
-							}
-							return cb(null, results[0]);
-						});
-					}
-				});
-				
-			});
-			
-		}
-		
 		var username = data.username;
 		var password = data.password;
 		
-		var host = driverConfig.ldap.host;
-		var port = driverConfig.ldap.port;
-		var baseDN = driverConfig.ldap.baseDN.replace(new RegExp(' ', 'g'), '');
-		var adminUser = driverConfig.ldap.adminUser.replace(new RegExp(' ', 'g'), '');
-		var adminPassword = driverConfig.ldap.adminPassword;
-		
+		if (soajs.servicesConfig.urac && soajs.servicesConfig.urac.ldapServer) {
+			var ldapServer = soajs.servicesConfig.urac.ldapServer;
+		} else {
+			return cb({"code": 706, "msg": soajs.config.errors[706]});
+		}
+		var host = ldapServer.host;
+		var port = ldapServer.port;
+		var baseDN = ldapServer.baseDN.replace(new RegExp(' ', 'g'), '');
+		var adminUser = ldapServer.adminUser.replace(new RegExp(' ', 'g'), '');
+		var adminPassword = ldapServer.adminPassword;
 		var url = host + ":" + port;
 		
 		var filter = 'uid=' + username;
@@ -609,30 +531,13 @@ driver = {
 				ad.find(filter, function (err, user) {
 					// since the user is authenticated, no error can be generated in this find call
 					// since we are searching using the filter => we will have one result
-					var record = user.other[0];
+					var user = user.other[0];
 					
-					/*
-					 temporary code tbd -=-=-=-=-=-=-
-					 */
-					var profile = {
-						id: record.dn,
-						firstName: record.cn,
-						lastName: record.sn,
-						email: record.mail,
-						password: '',
-						username: record.dn,
-						groups: [],
-						tenant: {}
-					};
-					// console.log(soajs.tenant);
-					// console.log("console.log(profile);");
-					// console.log(profile);
-					soajs.session.setURAC(profile, function (err) {
-						saveProfile(soajs, profile, function (error, record) {
+					saveUser(soajs, 'ldap', user, function (error, record) {
+						soajs.session.setURAC(record, function (err) {
 							return cb(null, record);
 						});
 					});
-					
 				});
 				
 			}
