@@ -464,7 +464,6 @@ describe("testing driver", function () {
 		});
 	});
 	
-	
 	describe("login ldap method", function () {
 		
 		// initiate the server with the following configuration
@@ -504,7 +503,25 @@ describe("testing driver", function () {
 			
 			var ldapServer = require('./ldapServer');
 			ldapServer.startServer(serverConfig, function (server) {
-				
+				executeMyRequest(params, 'ldap/login', 'post', function (body) {
+					assert.ok(body.data);
+					ldapServer.killServer(server);
+					done();
+				});
+			});
+		});
+		
+		it("success - login again with the correct credentials", function (done) {
+			var params = {
+				qs: {},
+				form: {
+					"username": "owner",
+					"password": "password"
+				}
+			};
+			
+			var ldapServer = require('./ldapServer');
+			ldapServer.startServer(serverConfig, function (server) {
 				executeMyRequest(params, 'ldap/login', 'post', function (body) {
 					assert.ok(body.data);
 					ldapServer.killServer(server);
@@ -602,8 +619,7 @@ describe("testing driver", function () {
 		
 	});
 	
-	
-	describe.skip("get user method", function () {
+	describe("get user method", function () {
 		it("fail - bad id", function (done) {
 			
 			var params = {
