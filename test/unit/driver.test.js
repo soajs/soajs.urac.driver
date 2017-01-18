@@ -88,11 +88,20 @@ var lib = {
 				705: "Unable to log in. Authentication failed."
 			},
 			"schema": {
-				"commonFields": {},
+				"commonFields": {
+					"model": {
+						"source": ['query.model'],
+						"required": false,
+						"validation": {
+							"type": "string"
+						}
+					}
+				},
 				"/login": {
 					"_apiInfo": {
 						"l": "login"
 					},
+					"commonFields": ["model"],
 					"username": {
 						"source": ['body.username'],
 						"required": true,
@@ -131,6 +140,7 @@ var lib = {
 					"_apiInfo": {
 						"l": "Get User"
 					},
+					"commonFields": ["model"],
 					"id": {
 						"source": ['query.id'],
 						"required": true,
@@ -293,6 +303,9 @@ var lib = {
 					'password': req.soajs.inputmaskData['password']
 				};
 				myDriver.login(req.soajs, data, function (err, record) {
+					if (err) {
+						req.soajs.log.error(err);
+					}
 					return res.json(req.soajs.buildResponse(null, record));
 				});
 				
@@ -380,8 +393,9 @@ describe("testing driver", function () {
 		
 	});
 	
-	describe.skip("login user method", function () {
+	describe("login user method", function () {
 		it("login with username", function (done) {
+			
 			var params = {
 				qs: {},
 				form: {
@@ -427,6 +441,23 @@ describe("testing driver", function () {
 			executeMyRequest(params, 'login', 'post', function (body) {
 				console.log(body);
 				// assert.ok(body.data);
+				done();
+			});
+			
+		});
+		
+		it("wrong model", function (done) {
+			var params = {
+				qs: {
+					"model": "mongo1"
+				},
+				form: {
+					"username": "user1",
+					"password": "123456"
+				}
+			};
+			
+			executeMyRequest(params, 'login', 'post', function (body) {
 				done();
 			});
 			
@@ -635,7 +666,7 @@ describe("testing driver", function () {
 		
 	});
 	
-	describe.skip("testing passport login API", function () {
+	describe("testing passport login API", function () {
 		var extKey3 = "aa39b5490c4a4ed0e56d7ec1232a428f1c5b5dcabc0788ce563402e233386738fc3eb18234a486ce1667cf70bd0e8b08890a86126cf1aa8d38f84606d8a6346359a61678428343e01319e0b784bc7e2ca267bbaafccffcb6174206e8c83f2a25";
 		
 		it("FAIL - Missing config", function (done) {
