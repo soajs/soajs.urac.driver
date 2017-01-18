@@ -558,8 +558,8 @@ driver = {
 		
 		var host = driverConfig.ldap.host;
 		var port = driverConfig.ldap.port;
-		var baseDN = driverConfig.ldap.baseDN;
-		var adminUser = driverConfig.ldap.adminUser;
+		var baseDN = driverConfig.ldap.baseDN.replace(new RegExp(' ', 'g'), '');
+		var adminUser = driverConfig.ldap.adminUser.replace(new RegExp(' ', 'g'), '');
 		var adminPassword = driverConfig.ldap.adminPassword;
 		
 		var url = host + ":" + port;
@@ -576,80 +576,63 @@ driver = {
 		
 		ad.authenticate(fullFilter, password, function (err, auth) {
 			if (err) {
-				if(!err.code && !err.lde_message){
-					soajs.log.error("General Error!");
-					soajs.log.error(err);
-					return cb({"code": 706, "msg": soajs.config.errors[706]});
-				}
-				
-				if (err.code === 'ECONNREFUSED') {
+				soajs.log.error(err);
+				if (err.code && err.code === 'ECONNREFUSED') {
 					soajs.log.error("Connection Refused!");
-					soajs.log.error(err);
 					return cb({"code": 700, "msg": soajs.config.errors[700]});
 				}
-				if (err.lde_message.includes('Incorrect DN given')) { // invalid admin username
-					soajs.log.error("Incorrect DN given!");
-					soajs.log.error(err);
-					return cb({"code": 701, "msg": soajs.config.errors[701]});
+				if (err.lde_message) {
+					if (err.lde_message.includes('Incorrect DN given')) { // invalid admin username
+						soajs.log.error("Incorrect DN given!");
+						return cb({"code": 701, "msg": soajs.config.errors[701]});
+					}
+					
+					if (err.lde_message.includes('INVALID_CREDENTIALS') && err.lde_message.includes(adminUser)) { // invalid admin credentials (wrong admin password)
+						soajs.log.error("Invalid Admin Credentials");
+						return cb({"code": 702, "msg": soajs.config.errors[702]});
+					}
+					
+					if (err.lde_message.includes('INVALID_CREDENTIALS') && err.lde_message.includes(filter)) { // invalid user credentials (wrong user password)
+						soajs.log.error("Invalid User Credentials");
+						var obj = {"code": 703, "msg": soajs.config.errors[703]};
+						return cb(obj);
+					}
 				}
 				
-				if (err.lde_message.includes('INVALID_CREDENTIALS') && err.lde_message.includes(adminUser)) { // invalid admin credentials (wrong admin password)
-					soajs.log.error("Invalid Admin Credentials");
-					soajs.log.error(err);
-					return cb({"code": 702, "msg": soajs.config.errors[702]});
-				}
-				
-				if (err.lde_message.includes('INVALID_CREDENTIALS') && err.lde_message.includes(filter)) { // invalid admin credentials (wrong admin password)
-					soajs.log.error("Invalid User Credentials");
-					soajs.log.error(err);
-					return cb({"code": 703, "msg": soajs.config.errors[703]});
-				}
+				return cb({"code": 704, "msg": soajs.config.errors[704]});
 			}
 			
 			if (auth) {
 				soajs.log.debug('Authenticated!');
 				
 				ad.find(filter, function (err, user) {
-					if (err) { // almost impossible
-						soajs.log.error("User Not Found {error}");
-						soajs.log.error(err);
-						return cb({"code": 704, "msg": soajs.config.errors[704]});
-					}
+					// since the user is authenticated, no error can be generated in this find call
+					// since we are searching using the filter => we will have one result
+					var record = user.other[0];
 					
-					if (!user) { // almost impossible
-						soajs.log.error("User Not Found");
-						return cb({"code": 704, "msg": soajs.config.errors[704]});
-					} else {
-						// since we are searching using the filter => we will have one result
-						var record = user.other[0];
-						
-						/*
-							temporary code tbd -=-=-=-=-=-=-
-						 */
-						var profile = {
-							id: record.dn,
-							firstName: record.cn,
-							lastName: record.sn,
-							email: record.mail,
-							password: '',
-							username: record.dn,
-							groups: [
-								"owner"
-							],
-							tenant: {
-								id: "5551aca9e179c39b760f7a1a",
-								code: "DBTN"
-							}
-						};
-						
-						soajs.session.setURAC(profile, function (err) {
-							saveProfile(soajs, profile, function (error, record) {
-								return cb(null, record);
-							});
+					/*
+					 temporary code tbd -=-=-=-=-=-=-
+					 */
+					var profile = {
+						id: record.dn,
+						firstName: record.cn,
+						lastName: record.sn,
+						email: record.mail,
+						password: '',
+						username: record.dn,
+						groups: [],
+						tenant: {}
+					};
+					// console.log(soajs.tenant);
+					// console.log("console.log(profile);");
+					// console.log(profile);
+					soajs.session.setURAC(profile, function (err) {
+						saveProfile(soajs, profile, function (error, record) {
+							return cb(null, record);
 						});
-					}
+					});
+					
 				});
-				
 				
 			}
 			else {
