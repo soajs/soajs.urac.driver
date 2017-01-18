@@ -493,6 +493,8 @@ describe("testing driver", function () {
 			adminPassword: 'secret'
 		};
 		
+		var extKey3 = "aa39b5490c4a4ed0e56d7ec1232a428f1c5b5dcabc0788ce563402e233386738fc3eb18234a486ce1667cf70bd0e8b08890a86126cf1aa8d38f84606d8a6346359a61678428343e01319e0b784bc7e2ca267bbaafccffcb6174206e8c83f2a25";
+		
 		it("success - login with the correct credentials", function (done) {
 			var params = {
 				qs: {},
@@ -528,6 +530,33 @@ describe("testing driver", function () {
 					ldapServer.killServer(server);
 					done();
 				});
+			});
+		});
+		
+		it("fail - login missing ldap configuration", function (done) {
+			var params = {
+				qs: {},
+				form: {
+					"username": "owner",
+					"password": "password"
+				},
+				headers: {
+					key: extKey3
+				}
+			};
+			
+			var ldapServer = require('./ldapServer');
+			ldapServer.startServer(serverConfig, function (server) {
+				
+				executeMyRequest(params, 'ldap/login', 'post', function (body) {
+					assert.deepEqual(body.errors.details[0], {
+						"code": 706,
+						"message": "Missing Configuration. Contact Web Master."
+					});
+					ldapServer.killServer(server);
+					done();
+				});
+				
 			});
 		});
 		
