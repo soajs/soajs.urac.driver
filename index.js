@@ -2,16 +2,9 @@
 var driverConfig = require('./config.js');
 var fs = require("fs");
 var merge = require('merge');
-
-var passportLib = require('./lib/passport.js');
-
-var userCollectionName = "users";
-var groupsCollectionName = "groups";
-
 var ActiveDirectory = require('activedirectory');
 
-var model = null;
-var driver;
+var passportLib = require('./lib/passport.js');
 
 function initBLModel(soajs, cb) {
 	var modelName = driverConfig.model;
@@ -45,319 +38,19 @@ function initBLModel(soajs, cb) {
 	
 }
 
-var utilities = {
-	"findRecord": function (soajs, condition, mainCb, callbck) {
-		soajs.log.debug(condition);
-		var combo = {
-			collection: userCollectionName,
-			condition: condition
-		};
-		driver.model.findEntry(soajs, combo, function (err, record) {
-			if (err) {
-				soajs.log.error(err);
-			}
-			if (record) {
-				soajs.log.debug('==== record ===');
-				soajs.log.debug(record);
-				return callbck(record);
-			}
-			else {
-				soajs.log.error('User not Found');
-				return mainCb(401);
-			}
-		});
-	},
-	"findGroups": function (soajs, record, callbck) {
-		//Get Groups config
-		var grpCriteria = {
-			"code": {
-				"$in": record.groups
-			}
-		};
-		if (record.tenant) {
-			grpCriteria.tenant = record.tenant;
-		}
-		var combo = {
-			collection: groupsCollectionName,
-			condition: grpCriteria
-		};
-		
-		driver.model.findEntries(soajs, combo, function (err, groups) {
-			record.groupsConfig = null;
-			if (err) {
-				soajs.log.error(err);
-			}
-			else {
-				record.groupsConfig = groups;
-			}
-			callbck(record);
-		});
-	},
-	"objectIsEnv": function (obj) {
-		if (obj) {
-			if (JSON.stringify(obj) === '{}') {
-				return false;
-			}
-			if (!Object.hasOwnProperty.call(obj, 'access') && !obj.apis && !obj.apisRegExp && !obj.apisPermission) {
-				if (obj.get || obj.post || obj.put || obj.delete) {
-					return false;
-				}
-				return true;
-			}
-		}
-		return false;
-	},
-	"assureConfig": function (soajs, urac, cb) {
-		// same as session.setURAC
-		if (!urac) {
-			if (cb && (typeof cb === "function")) {
-				return cb();
-			}
-			else {
-				return;
-			}
-		}
-		var regEnvironment = (process.env.SOAJS_ENV || "dev");
-		regEnvironment = regEnvironment.toLowerCase();
-		
-		//NOTE: we need to assure config = {packages: {}, keys : {}}
-		if (!urac.config) {
-			urac.config = {};
-		}
-		if (!urac.config.packages) {
-			urac.config.packages = {};
-		}
-		else {
-			for (var packageCode in urac.config.packages) {
-				if (Object.hasOwnProperty.call(urac.config.packages, packageCode)) {
-					var ACL = urac.config.packages[packageCode].acl;
-					urac.config.packages[packageCode].acl_all_env = urac.config.packages[packageCode].acl;
-					if (ACL && typeof ACL === "object") {
-						if (ACL[regEnvironment]) {
-							if (utilities.objectIsEnv(ACL[regEnvironment])) {
-								urac.config.packages[packageCode].acl = ACL[regEnvironment];
-							}
-						}
-					}
-				}
-			}
-		}
-		if (!urac.config.keys) {
-			urac.config.keys = {};
-		}
-		else {
-			//urac.config.keys[key].acl
-			for (var key in urac.config.keys) {
-				if (Object.hasOwnProperty.call(urac.config.keys, key)) {
-					var ACL = urac.config.keys[key].acl;
-					urac.config.keys[key].acl_all_env = urac.config.keys[key].acl;
-					if (ACL && typeof ACL === "object") {
-						if (ACL[regEnvironment]) {
-							if (!utilities.objectIsEnv(ACL[regEnvironment])) {
-								urac.config.keys[key].acl = ACL[regEnvironment];
-							}
-						}
-					}
-				}
-			}
-		}
-		
-		//Groups ACL
-		// - merge all group.config.keys[key].acl
-		// - merge all group.config.packages[packageCode].acl
-		if (urac.groupsConfig) {
-			var mergedInfo = {"keys": {}, "packages": {}};
-			for (var i = 0; i <= urac.groupsConfig.length; i++) {
-				var group = urac.groupsConfig[i];
-				if (group && group.config) {
-					if (group.config.keys) {
-						//merge all keys ACL
-						for (var key in group.config.keys) {
-							if (Object.hasOwnProperty.call(group.config.keys, key)) {
-								var ACL = group.config.keys[key].acl;
-								if (ACL) {
-									if (mergedInfo.keys[key] && mergedInfo.keys[key].acl_all_env) {
-										mergedInfo.keys[key].acl_all_env = merge.recursive(true, mergedInfo.keys[key].acl_all_env, ACL);
-									}
-									else {
-										mergedInfo.keys[key] = {
-											"acl_all_env": ACL
-										};
-									}
-									
-									if (mergedInfo.keys[key] && mergedInfo.keys[key].acl) {
-										mergedInfo.keys[key].acl = mergedInfo.keys[key].acl_all_env[regEnvironment];
-									}
-									else {
-										mergedInfo.keys[key] = {
-											"acl": mergedInfo.keys[key].acl_all_env[regEnvironment]
-										};
-									}
-								}
-							}
-						}
-					}
-					if (group.config.packages) {
-						//merge all packages ACL
-						for (var packageCode in group.config.packages) {
-							if (Object.hasOwnProperty.call(group.config.packages, packageCode)) {
-								var ACL = group.config.packages[packageCode].acl;
-								if (ACL) {
-									if (mergedInfo.packages[packageCode] && mergedInfo.packages[packageCode].acl_all_env) {
-										mergedInfo.packages[packageCode].acl_all_env = merge.recursive(true, mergedInfo.packages[packageCode].acl_all_env, ACL);
-									}
-									else {
-										mergedInfo.packages[packageCode] = {"acl_all_env": ACL};
-									}
-									
-									if (mergedInfo.packages[packageCode] && mergedInfo.packages[packageCode].acl) {
-										mergedInfo.packages[packageCode].acl = mergedInfo.packages[packageCode].acl_all_env[regEnvironment];
-									}
-									else {
-										mergedInfo.packages[packageCode] = {
-											"acl": mergedInfo.packages[packageCode].acl_all_env[regEnvironment]
-										};
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-			urac.groupsConfig = mergedInfo;
-		}
-		
-		if (cb && (typeof cb === "function")) {
-			return cb();
-		}
-		else {
-			return;
-		}
-	}
-};
+var utilities = require("./lib/helpers.js");
 
-function saveUser(soajs, mode, user, cb) {
-	var filePath = __dirname + "/lib/drivers/" + mode + ".js";
-	var socialNetworkDriver = require(filePath);
-	socialNetworkDriver.mapProfile(user, function (error, profile) {
-		driver.model.initConnection(soajs);
-		
-		function saveSocialRecord(profile, mode) {
-			var userRecord = {
-				"username": profile.username,
-				"password": profile.password,
-				"firstName": profile.firstName,
-				"lastName": profile.lastName,
-				"email": profile.email,
-				'status': 'active',
-				'ts': new Date().getTime(),
-				'groups': [],
-				'config': {
-					'packages': {},
-					'keys': {}
-				},
-				'profile': {},
-				"socialId": {},
-				"tenant": {
-					"id": soajs.tenant.id,
-					"code": soajs.tenant.code
-				}
-			};
-			
-			userRecord.socialId[mode] = {
-				ts: new Date().getTime(),
-				"id": profile.id
-			};
-			
-			var condition = {
-				$or: []
-			};
-			if (userRecord.email) {
-				condition["$or"].push({'email': userRecord.email});
-			}
-			var c = {};
-			c['socialId.' + mode + '.id'] = profile.id;
-			condition["$or"].push(c);
-			
-			var combo = {
-				collection: userCollectionName,
-				condition: condition
-			};
-			
-			driver.model.findEntry(soajs, combo, function (err, record) {
-				if (err) {
-					soajs.log.error(err);
-					driver.model.closeConnection(soajs);
-					return cb({"code": 400, "msg": soajs.config.errors[400]});
-				}
-				
-				if (record) {
-					// update record
-					if (!record.socialId) {
-						record.socialId = {};
-					}
-					if (!record.socialId[mode]) {
-						record.socialId[mode] = {
-							ts: new Date().getTime()
-						};
-					}
-					
-					record.socialId[mode].id = profile.id;
-					if (user.accessToken) {
-						record.socialId[mode].accessToken = user.accessToken;
-					}
-					if (user.refreshToken) { // first time application authorized
-						record.socialId[mode].refreshToken = user.refreshToken;
-					}
-					
-					var comboUpdate = {
-						collection: userCollectionName,
-						record: record
-					};
-					driver.model.saveEntry(soajs, comboUpdate, function (err, ret) {
-						driver.model.closeConnection(soajs);
-						if (err) {
-							soajs.log.error(err);
-						}
-						return cb(null, record);
-					});
-				}
-				else {
-					if (user.accessToken) {
-						userRecord.socialId[mode].accessToken = user.accessToken;
-					}
-					if (user.refreshToken) { // first time application authorized
-						userRecord.socialId[mode].refreshToken = user.refreshToken;
-					}
-					
-					var comboInsert = {
-						collection: userCollectionName,
-						record: userRecord
-					};
-					driver.model.insertEntry(soajs, comboInsert, function (err, results) {
-						driver.model.closeConnection(soajs);
-						if (err) {
-							soajs.log.error(err);
-							return cb({"code": 400, "msg": soajs.config.errors[400]});
-						}
-						return cb(null, results[0]);
-					});
-				}
-			});
-		}
-		
-		saveSocialRecord(profile, mode);
-	});
-}
-
-driver = {
+var driver = {
 	"model": null,
+
 	"passportLibInit": function (req, cb) {
 		passportLib.init(req, cb);
 	},
+
 	"passportLibInitAuth": function (req, response, passport) {
 		passportLib.initAuth(req, response, passport);
 	},
+
 	"passportLibAuthenticate": function (req, res, passport, cb) {
 		var authentication = req.soajs.inputmaskData.strategy;
 		
@@ -375,8 +68,7 @@ driver = {
 					req.soajs.inputmaskData.user = user;
 					initBLModel(req.soajs, function (err) {
 						var mode = req.soajs.inputmaskData.strategy;
-						
-						saveUser(req.soajs, mode, user, function (error, data) {
+						utilities.saveUser(req.soajs, driver, mode, user, function (error, data) {
 							cb(error, data);
 						});
 					});
@@ -388,7 +80,6 @@ driver = {
 	},
 	
 	"login": function (soajs, data, cb) {
-		var helper = require("./lib/helpers.js");
 		var username = data.username;
 		var password = data.password;
 		var criteria = {
@@ -406,12 +97,12 @@ driver = {
 				return cb(err);
 			}
 			driver.model.initConnection(soajs);
-			utilities.findRecord(soajs, criteria, cb, function (record) {
+			utilities.findRecord(soajs, driver, criteria, cb, function (record) {
 				var myConfig = driverConfig;
 				if (soajs.config) {
 					myConfig = soajs.config;
 				}
-				helper.comparePasswd(soajs.servicesConfig.urac, password, record.password, myConfig, function (err, response) {
+				utilities.comparePasswd(soajs.servicesConfig.urac, password, record.password, myConfig, function (err, response) {
 					if (err || !response) {
 						driver.model.closeConnection(soajs);
 						return cb(413);
@@ -421,7 +112,7 @@ driver = {
 					
 					if (record.groups && Array.isArray(record.groups) && record.groups.length !== 0) {
 						//Get Groups config
-						utilities.findGroups(soajs, record, function (record) {
+						utilities.findGroups(soajs, driver, record, function (record) {
 							driver.model.closeConnection(soajs);
 							return cb(null, record);
 						});
@@ -436,6 +127,7 @@ driver = {
 			});
 		});
 	},
+
 	"getRecord": function (soajs, data, cb) {
 		initBLModel(soajs, function (err) {
 			driver.model.initConnection(soajs);
@@ -450,12 +142,12 @@ driver = {
 			var criteria = {
 				'_id': id
 			};
-			utilities.findRecord(soajs, criteria, cb, function (record) {
+			utilities.findRecord(soajs, driver, criteria, cb, function (record) {
 				delete record.password;
 				
 				if (record.groups && Array.isArray(record.groups) && record.groups.length !== 0) {
 					//Get Groups config
-					utilities.findGroups(soajs, record, function (record) {
+					utilities.findGroups(soajs, driver, record, function (record) {
 						returnUser(record);
 					});
 				}
@@ -471,13 +163,15 @@ driver = {
 			});
 		});
 	},
+
 	"ldapLogin": function (soajs, data, cb) {
 		var username = data.username;
 		var password = data.password;
 		
 		if (soajs.servicesConfig.urac && soajs.servicesConfig.urac.ldapServer) {
 			var ldapServer = soajs.servicesConfig.urac.ldapServer;
-		} else {
+		}
+		else {
 			return cb({"code": 706, "msg": soajs.config.errors[706]});
 		}
 		var host = ldapServer.host;
@@ -532,8 +226,7 @@ driver = {
 					// since the user is authenticated, no error can be generated in this find call
 					// since we are searching using the filter => we will have one result
 					var user = user.other[0];
-					
-					saveUser(soajs, 'ldap', user, function (error, record) {
+					utilities.saveUser(soajs, driver, 'ldap', user, function (error, record) {
 						soajs.session.setURAC(record, function (err) {
 							return cb(null, record);
 						});
