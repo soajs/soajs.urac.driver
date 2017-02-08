@@ -9,10 +9,14 @@ module.exports = {
         }
         else {
             var tcode = soajs.tenant.code;
-            if (soajs.tenant.roaming && soajs.tenant.roaming.code)
+            if (soajs.tenant.roaming && soajs.tenant.roaming.code) {
                 tcode = soajs.tenant.roaming.code;
+            }
+            var tenantMetaDB = soajs.registry.tenantMetaDB;
+            if (soajs.tenant.roaming && soajs.tenant.roaming.tenantMetaDB)
+                tenantMetaDB = soajs.tenant.roaming.tenantMetaDB;
 
-            var config = soajs.meta.tenantDB(soajs.registry.tenantMetaDB, 'urac', tcode);
+            var config = soajs.meta.tenantDB(tenantMetaDB, 'urac', tcode);
             soajs.mongoDb = new Mongo(config);
         }
     },
