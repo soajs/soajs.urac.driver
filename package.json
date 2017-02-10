@@ -28,6 +28,7 @@
     "passport-google-oauth": "*",
     "passport-local": "*",
     "passport-twitter": "*",
+    "ldapjs" : "*",
     "activedirectory" : "*"
   }
 }
