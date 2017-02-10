@@ -42,15 +42,36 @@ var utilities = require("./lib/helpers.js");
 
 var driver = {
 	"model": null,
-
+	
+	/**
+	 * Initialize passport based on the strategy requested
+	 *
+	 * @param {Request object} req
+	 * @param {Callback(error object, passport object) Function} cb
+	 */
 	"passportLibInit": function (req, cb) {
 		passportLib.init(req, cb);
 	},
-
+	
+	/**
+	 * Authenticate through passport
+	 *
+	 * @param {Request object} req
+	 * @param {Response object} res
+	 * @param {Passport object} passport
+	 */
 	"passportLibInitAuth": function (req, response, passport) {
 		passportLib.initAuth(req, response, passport);
 	},
-
+	
+	/**
+	 * Get driver, do what is needed before authenticating, and authenticate
+	 *
+	 * @param {Request object} req
+	 * @param {Response object} res
+	 * @param {Passport object} passport
+	 * @param {Callback(error object, data object) function} cb
+	 */
 	"passportLibAuthenticate": function (req, res, passport, cb) {
 		var authentication = req.soajs.inputmaskData.strategy;
 		
@@ -79,6 +100,13 @@ var driver = {
 		
 	},
 	
+	/**
+	 * Verify login credentials and login
+	 *
+	 * @param {soajs object} soajs
+	 * @param {data object} data
+	 * @param {Callback(error object, data object) function} cb
+	 */
 	"login": function (soajs, data, cb) {
 		var username = data.username;
 		var password = data.password;
@@ -127,7 +155,14 @@ var driver = {
 			});
 		});
 	},
-
+	
+	/**
+	 * Get logged in record from database
+	 *
+	 * @param {soajs object} soajs
+	 * @param {data object} data
+	 * @param {Callback(error object, user record object) function} cb
+	 */
 	"getRecord": function (soajs, data, cb) {
 		initBLModel(soajs, function (err) {
 			driver.model.initConnection(soajs);
@@ -163,7 +198,14 @@ var driver = {
 			});
 		});
 	},
-
+	
+	/**
+	 * Login through LDAP
+	 *
+	 * @param {soajs object} soajs
+	 * @param {data object} data
+	 * @param {Callback(error object, user record object) function} cb
+	 */
 	"ldapLogin": function (soajs, data, cb) {
 		var username = data.username;
 		var password = data.password;
