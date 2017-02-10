@@ -14,7 +14,7 @@ var passportLib = require('./lib/passport.js');
 function initBLModel(soajs, cb) {
 	var modelName = driverConfig.model;
 	if (soajs.servicesConfig && soajs.servicesConfig.model) {
-		modelName = soajs.servicesConfig.model
+		modelName = soajs.servicesConfig.model;
 	}
 	if (process.env.SOAJS_TEST && soajs.inputmaskData.model) {
 		modelName = soajs.inputmaskData.model;
@@ -214,9 +214,10 @@ var driver = {
 	"ldapLogin": function (soajs, data, cb) {
 		var username = data.username;
 		var password = data.password;
-		
+		var ldapServer;
+
 		if (soajs.servicesConfig.urac && soajs.servicesConfig.urac.ldapServer) {
-			var ldapServer = soajs.servicesConfig.urac.ldapServer;
+			ldapServer = soajs.servicesConfig.urac.ldapServer;
 		}
 		else {
 			return cb({"code": 706, "msg": soajs.config.errors[706]});
@@ -272,8 +273,8 @@ var driver = {
 				ad.find(filter, function (err, user) {
 					// since the user is authenticated, no error can be generated in this find call
 					// since we are searching using the filter => we will have one result
-					var user = user.other[0];
-					utilities.saveUser(soajs, driver.model, 'ldap', user, function (error, record) {
+					var userRecord = user.other[0];
+					utilities.saveUser(soajs, driver.model, 'ldap', userRecord, function (error, record) {
 						soajs.session.setURAC(record, function (err) {
 							return cb(null, record);
 						});
