@@ -1,0 +1,23 @@
+language: node_js
+
+node_js: 0.10
+
+services:
+  - mongodb
+
+branches:
+  only:
+    - master
+
+addons:
+  hosts:
+    - localhost
+
+before_install:
+  - sudo apt-get update && sudo apt-get install sendmail
+
+before_script:
+  - npm install -g grunt-cli
+
+script:
+  - grunt coverage
