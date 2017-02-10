@@ -1,7 +1,7 @@
 {
   "name": "soajs.urac.driver",
   "description": "soajs URAC Driver",
-  "version": "0.1.0",
+  "version": "0.0.1",
   "author": {
     "name": "soajs team",
     "email": "team@soajs.org"
@@ -28,6 +28,7 @@
     "passport-google-oauth": "*",
     "passport-local": "*",
     "passport-twitter": "*",
+    "ldapjs" : "*",
     "activedirectory" : "*"
   }
 }
