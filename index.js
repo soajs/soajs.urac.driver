@@ -6,6 +6,11 @@ var ActiveDirectory = require('activedirectory');
 
 var passportLib = require('./lib/passport.js');
 
+/**
+ * Initialize the Business Logic model
+ * @param {SOAJS Object} soajs
+ * @param {Callback Function} cb
+ */
 function initBLModel(soajs, cb) {
 	var modelName = driverConfig.model;
 	if (soajs.servicesConfig && soajs.servicesConfig.model) {
@@ -89,7 +94,7 @@ var driver = {
 					req.soajs.inputmaskData.user = user;
 					initBLModel(req.soajs, function (err) {
 						var mode = req.soajs.inputmaskData.strategy;
-						utilities.saveUser(req.soajs, driver, mode, user, function (error, data) {
+						utilities.saveUser(req.soajs, driver.model, mode, user, function (error, data) {
 							cb(error, data);
 						});
 					});
@@ -103,8 +108,8 @@ var driver = {
 	/**
 	 * Verify login credentials and login
 	 *
-	 * @param {soajs object} soajs
-	 * @param {data object} data
+	 * @param {SOAJS object} soajs
+	 * @param {Object} data
 	 * @param {Callback(error object, data object) function} cb
 	 */
 	"login": function (soajs, data, cb) {
@@ -125,7 +130,7 @@ var driver = {
 				return cb(err);
 			}
 			driver.model.initConnection(soajs);
-			utilities.findRecord(soajs, driver, criteria, cb, function (record) {
+			utilities.findRecord(soajs, driver.model, criteria, cb, function (record) {
 				var myConfig = driverConfig;
 				if (soajs.config) {
 					myConfig = soajs.config;
@@ -140,7 +145,7 @@ var driver = {
 					
 					if (record.groups && Array.isArray(record.groups) && record.groups.length !== 0) {
 						//Get Groups config
-						utilities.findGroups(soajs, driver, record, function (record) {
+						utilities.findGroups(soajs, driver.model, record, function (record) {
 							driver.model.closeConnection(soajs);
 							return cb(null, record);
 						});
@@ -159,8 +164,8 @@ var driver = {
 	/**
 	 * Get logged in record from database
 	 *
-	 * @param {soajs object} soajs
-	 * @param {data object} data
+	 * @param {SOAJS object} soajs
+	 * @param {Object} data
 	 * @param {Callback(error object, user record object) function} cb
 	 */
 	"getRecord": function (soajs, data, cb) {
@@ -177,12 +182,12 @@ var driver = {
 			var criteria = {
 				'_id': id
 			};
-			utilities.findRecord(soajs, driver, criteria, cb, function (record) {
+			utilities.findRecord(soajs, driver.model, criteria, cb, function (record) {
 				delete record.password;
 				
 				if (record.groups && Array.isArray(record.groups) && record.groups.length !== 0) {
 					//Get Groups config
-					utilities.findGroups(soajs, driver, record, function (record) {
+					utilities.findGroups(soajs, driver.model, record, function (record) {
 						returnUser(record);
 					});
 				}
@@ -202,8 +207,8 @@ var driver = {
 	/**
 	 * Login through LDAP
 	 *
-	 * @param {soajs object} soajs
-	 * @param {data object} data
+	 * @param {SOAJS object} soajs
+	 * @param {Object} data
 	 * @param {Callback(error object, user record object) function} cb
 	 */
 	"ldapLogin": function (soajs, data, cb) {
@@ -268,7 +273,7 @@ var driver = {
 					// since the user is authenticated, no error can be generated in this find call
 					// since we are searching using the filter => we will have one result
 					var user = user.other[0];
-					utilities.saveUser(soajs, driver, 'ldap', user, function (error, record) {
+					utilities.saveUser(soajs, driver.model, 'ldap', user, function (error, record) {
 						soajs.session.setURAC(record, function (err) {
 							return cb(null, record);
 						});
