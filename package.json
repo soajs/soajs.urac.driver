@@ -20,7 +20,7 @@
   "devDependencies": {
   },
   "dependencies": {
-    "soajs": "*",
+    "soajs": "0.4.*",
     "merge": "*",
     "passport": "*",
     "passport-facebook": "*",
