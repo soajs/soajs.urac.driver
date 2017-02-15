@@ -8,7 +8,7 @@ module.exports = {
 	 * @param {SOAJS Object} soajs
 	 */
 	"initConnection": function (soajs) {
-		if (soajs.inputmaskData.isOwner) {
+		if (soajs.inputmaskData && soajs.inputmaskData.isOwner) {
 			soajs.mongoDb = new Mongo(soajs.meta.tenantDB(soajs.registry.tenantMetaDB, 'urac', soajs.inputmaskData.tCode));
 		}
 		else {
@@ -42,7 +42,7 @@ module.exports = {
 	"validateId": function (soajs, id) {
 		var id1;
 		try {
-			id1 = soajs.mongoDb.ObjectId(id);
+			id1 = soajs.mongoDb.ObjectId(id.toString());
 			return id1;
 		}
 		catch (e) {
