@@ -1,6 +1,6 @@
 "use strict";
 var request = require("request");
-var Mongo = require("soajs").mongo;
+var Mongo = require("soajs.core.modules").mongo;
 var mongo;
 
 var testConsole = {

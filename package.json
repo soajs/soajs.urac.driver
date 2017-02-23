@@ -36,7 +36,8 @@
     "soajs.controller": "0.2.*"
   },
   "dependencies": {
-    "soajs": "0.4.*",
+    "activedirectory" : "*",
+    "ldapjs" : "*",
     "merge": "*",
     "passport": "*",
     "passport-facebook": "*",
@@ -44,7 +45,6 @@
     "passport-google-oauth": "*",
     "passport-local": "*",
     "passport-twitter": "*",
-    "ldapjs" : "*",
-    "activedirectory" : "*"
+    "soajs.core.modules": "0.0.*"
   }
 }
