@@ -16,7 +16,7 @@ function initBLModel(soajs, cb) {
 	if (soajs.servicesConfig && soajs.servicesConfig.model) {
 		modelName = soajs.servicesConfig.model;
 	}
-	if (process.env.SOAJS_TEST && soajs.inputmaskData.model) {
+	if (process.env.SOAJS_TEST && soajs.inputmaskData && soajs.inputmaskData.model) {
 		modelName = soajs.inputmaskData.model;
 	}
 	
