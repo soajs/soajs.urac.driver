@@ -23,7 +23,7 @@ function executeMyRequest(params, apiPath, method, cb) {
 	function requester(apiName, method, params, cb) {
 		
 		var options = {
-			uri: 'http://localhost:4000/myTest/' + apiName,
+			uri: 'http://localhost:4000/mytest/' + apiName,
 			headers: {
 				'Content-Type': 'application/json',
 				key: extKey
@@ -65,7 +65,7 @@ var lib = {
 			"serviceVersion": 1,
 			"requestTimeout": 2,
 			"requestTimeoutRenewal": 2,
-			"serviceName": "myTest",
+			"serviceName": "mytest",
 			"servicePort": 4099,
 			"serviceGroup": "exampleGroup",
 			"extKeyRequired": true,

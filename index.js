@@ -275,9 +275,7 @@ var driver = {
 					// since we are searching using the filter => we will have one result
 					var userRecord = user.other[0];
 					utilities.saveUser(soajs, driver.model, 'ldap', userRecord, function (error, record) {
-						soajs.session.setURAC(record, function (err) {
-							return cb(null, record);
-						});
+						return cb(null, record);
 					});
 				});
 				
