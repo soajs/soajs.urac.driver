@@ -374,22 +374,7 @@ describe("testing driver", function () {
 	
 	before(function (done) {
 		lib.startTestService(function () {
-			setTimeout(function () {
-				var params = {
-					"uri": "http://127.0.0.1:5000/reloadRegistry",
-					"headers": {
-						"content-type": "application/json"
-					},
-					"json": true
-				};
-				helper.requester("get", params, function (error, response) {
-					assert.ifError(error);
-					assert.ok(response);
-					setTimeout(function () {
-						done();
-					}, 100);
-				});
-			}, 4000);
+			done();
 		});
 		
 	});
@@ -406,6 +391,7 @@ describe("testing driver", function () {
 			};
 			
 			executeMyRequest(params, 'login', 'post', function (body) {
+				console.log(JSON.stringify(body, null, 2));
 				assert.ok(body.data);
 				done();
 			});
