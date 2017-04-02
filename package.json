@@ -44,6 +44,6 @@
     "passport-google-oauth": "*",
     "passport-local": "*",
     "passport-twitter": "*",
-    "soajs.core.modules": "git+https://github.com/soajs/soajs.core.modules.git#develop"
+    "soajs.core.modules": "1.0.*"
   }
 }
