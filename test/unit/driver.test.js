@@ -46,7 +46,7 @@ function executeMyRequest(params, apiPath, method, cb) {
 		if (params.qs) {
 			options.qs = params.qs;
 		}
-		
+		console.log(options);
 		request[method](options, function (error, response, body) {
 			assert.ifError(error);
 			assert.ok(body);
@@ -332,7 +332,6 @@ var lib = {
 				var uracDriver = helper.requireModule("./index");
 				uracDriver.passportLibInit(req, function (error, passport) {
 					if (error) {
-						console.log('errorrrrr');
 						console.log(error);
 						return res.json(req.soajs.buildResponse(error));
 					}
@@ -356,7 +355,6 @@ var lib = {
 						}
 						
 						return res.json(req.soajs.buildResponse(error, {}));
-						
 					});
 				});
 			});
@@ -374,7 +372,9 @@ describe("testing driver", function () {
 	
 	before(function (done) {
 		lib.startTestService(function () {
-			done();
+			setTimeout(function () {
+				done();
+			}, 1500);
 		});
 		
 	});
