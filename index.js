@@ -22,7 +22,7 @@ function initBLModel(soajs, cb) {
 	
 	var modelPath = __dirname + "/model/" + modelName + ".js";
 	return requireModel(modelPath, cb);
-	
+
 	/**
 	 * checks if model file exists, requires it and returns it.
 	 * @param filePath
@@ -35,19 +35,19 @@ function initBLModel(soajs, cb) {
 				soajs.log.error('Requested Model Not Found!');
 				return cb(601);
 			}
-			
+
 			driver.model = require(filePath);
 			return cb();
 		});
 	}
-	
+
 }
 
 var utilities = require("./lib/helpers.js");
 
 var driver = {
 	"model": null,
-	
+
 	/**
 	 * Initialize passport based on the strategy requested
 	 *
@@ -57,7 +57,7 @@ var driver = {
 	"passportLibInit": function (req, cb) {
 		passportLib.init(req, cb);
 	},
-	
+
 	/**
 	 * Authenticate through passport
 	 *
@@ -68,7 +68,7 @@ var driver = {
 	"passportLibInitAuth": function (req, response, passport) {
 		passportLib.initAuth(req, response, passport);
 	},
-	
+
 	/**
 	 * Get driver, do what is needed before authenticating, and authenticate
 	 *
@@ -79,9 +79,9 @@ var driver = {
 	 */
 	"passportLibAuthenticate": function (req, res, passport, cb) {
 		var authentication = req.soajs.inputmaskData.strategy;
-		
-		passportLib.getDriver(req, false, function (err, driver) {
-			driver.preAuthenticate(req, function (error) {
+
+		passportLib.getDriver(req, false, function (err, passportDriver) {
+			passportDriver.preAuthenticate(req, function (error) {
 				passport.authenticate(authentication, {session: false}, function (err, user, info) {
 					if (err) {
 						req.soajs.log.error(err);
@@ -90,7 +90,7 @@ var driver = {
 					if (!user) {
 						cb({"code": 403, "msg": req.soajs.config.errors[403]});
 					}
-					
+
 					req.soajs.inputmaskData.user = user;
 					initBLModel(req.soajs, function (err) {
 						var mode = req.soajs.inputmaskData.strategy;
@@ -99,12 +99,12 @@ var driver = {
 						});
 					});
 				})(req, res);
-				
+
 			});
 		});
-		
+
 	},
-	
+
 	/**
 	 * Verify login credentials and login
 	 *
@@ -124,7 +124,7 @@ var driver = {
 			delete criteria.username;
 			criteria.email = username;
 		}
-		
+
 		initBLModel(soajs, function (err) {
 			if (err) {
 				return cb(err);
@@ -142,7 +142,7 @@ var driver = {
 					}
 					delete record.password;
 					delete record.socialId;
-					
+
 					if (record.groups && Array.isArray(record.groups) && record.groups.length !== 0) {
 						//Get Groups config
 						utilities.findGroups(soajs, driver.model, record, function (record) {
@@ -154,13 +154,13 @@ var driver = {
 						driver.model.closeConnection(soajs);
 						return cb(null, record);
 					}
-					
+
 				});
-				
+
 			});
 		});
 	},
-	
+
 	/**
 	 * Get logged in record from database
 	 *
@@ -178,13 +178,13 @@ var driver = {
 			catch (e) {
 				return cb(411);
 			}
-			
+
 			var criteria = {
 				'_id': id
 			};
 			utilities.findRecord(soajs, driver.model, criteria, cb, function (record) {
 				delete record.password;
-				
+
 				if (record.groups && Array.isArray(record.groups) && record.groups.length !== 0) {
 					//Get Groups config
 					utilities.findGroups(soajs, driver.model, record, function (record) {
@@ -194,7 +194,7 @@ var driver = {
 				else {
 					returnUser(record);
 				}
-				
+
 				function returnUser(record) {
 					utilities.assureConfig(soajs, record);
 					driver.model.closeConnection(soajs);
@@ -203,7 +203,7 @@ var driver = {
 			});
 		});
 	},
-	
+
 	/**
 	 * Login through LDAP
 	 *
@@ -228,17 +228,17 @@ var driver = {
 		var adminUser = ldapServer.adminUser.replace(new RegExp(' ', 'g'), '');
 		var adminPassword = ldapServer.adminPassword;
 		var url = host + ":" + port;
-		
+
 		var filter = 'uid=' + username;
 		var fullFilter = 'uid=' + username + ',' + baseDN;
-		
+
 		var ad = new ActiveDirectory({
 			url: url,
 			baseDN: baseDN,
 			username: adminUser,
 			password: adminPassword
 		});
-		
+
 		ad.authenticate(fullFilter, password, function (err, auth) {
 			if (err) {
 				soajs.log.error(err);
@@ -251,25 +251,25 @@ var driver = {
 						soajs.log.error("Incorrect DN given!");
 						return cb({"code": 701, "msg": soajs.config.errors[701]});
 					}
-					
+
 					if (err.lde_message.includes('INVALID_CREDENTIALS') && err.lde_message.includes(adminUser)) { // invalid admin credentials (wrong admin password)
 						soajs.log.error("Invalid Admin Credentials");
 						return cb({"code": 702, "msg": soajs.config.errors[702]});
 					}
-					
+
 					if (err.lde_message.includes('INVALID_CREDENTIALS') && err.lde_message.includes(filter)) { // invalid user credentials (wrong user password)
 						soajs.log.error("Invalid User Credentials");
 						var obj = {"code": 703, "msg": soajs.config.errors[703]};
 						return cb(obj);
 					}
 				}
-				
+
 				return cb({"code": 704, "msg": soajs.config.errors[704]});
 			}
-			
+
 			if (auth) {
 				soajs.log.debug('Authenticated!');
-				
+
 				ad.find(filter, function (err, user) {
 					// since the user is authenticated, no error can be generated in this find call
 					// since we are searching using the filter => we will have one result
@@ -278,7 +278,7 @@ var driver = {
 						return cb(null, record);
 					});
 				});
-				
+
 			}
 			else {
 				soajs.log.error("Authentication failed.");
