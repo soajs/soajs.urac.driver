@@ -380,6 +380,7 @@ describe("testing driver", function () {
 	});
 	
 	describe("login user method", function () {
+
 		it("login with username", function (done) {
 			
 			var params = {
@@ -636,6 +637,7 @@ describe("testing driver", function () {
 	});
 	
 	describe("get user method", function () {
+
 		it("fail - bad id", function (done) {
 			
 			var params = {
@@ -699,6 +701,7 @@ describe("testing driver", function () {
 	});
 	
 	describe("testing passport login API", function () {
+
 		var extKey3 = "aa39b5490c4a4ed0e56d7ec1232a428f1c5b5dcabc0788ce563402e233386738fc3eb18234a486ce1667cf70bd0e8b08890a86126cf1aa8d38f84606d8a6346359a61678428343e01319e0b784bc7e2ca267bbaafccffcb6174206e8c83f2a25";
 		
 		it("FAIL - Missing config", function (done) {
@@ -773,6 +776,8 @@ describe("testing driver", function () {
 			};
 			executeMyRequest(params, 'passport/validate/twitter', 'get', function (body) {
 				assert.ok(body);
+				// console.log(JSON.stringify(body, null, 2));
+				// assert.ok(body.errors);
 				done();
 			});
 		});
@@ -786,6 +791,8 @@ describe("testing driver", function () {
 			
 			executeMyRequest(params, 'passport/validate/facebook', 'get', function (body) {
 				assert.ok(body);
+				// console.log(JSON.stringify(body, null, 2));
+				assert.ok(body.errors);
 				done();
 			});
 		});
@@ -798,6 +805,7 @@ describe("testing driver", function () {
 			};
 			executeMyRequest(params, 'passport/validate/facebook', 'get', function (body) {
 				assert.ok(body);
+				assert.ok(body.errors);
 				done();
 			});
 		});
@@ -810,6 +818,8 @@ describe("testing driver", function () {
 			};
 			executeMyRequest(params, 'passport/validate/github', 'get', function (body) {
 				assert.ok(body);
+				// console.log(JSON.stringify(body, null, 2));
+				assert.ok(body.errors);
 				done();
 			});
 		});
