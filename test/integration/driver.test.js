@@ -1014,13 +1014,13 @@ describe("testing driver", function () {
 		it("Fail - Missing params for twitter", function (done) {
 			var params = {
 				qs: {
-					oauth_verifier: "CZ10nMKn8BSEYHpZZb8eQxUY3kuxGAR6"
+					oauth_token: "XnjHbgAAAAAAxq3dAAABWCr23O0"
 				}
 			};
 			executeMyRequest(params, 'passport/validate/twitter', 'get', function (body) {
 				assert.ok(body);
 				console.log(JSON.stringify(body, null, 2));
-				// assert.ok(body.errors);
+				assert.ok(body.errors);
 				done();
 			});
 		});
