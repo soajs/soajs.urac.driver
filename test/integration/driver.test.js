@@ -306,7 +306,10 @@ var lib = {
 				myDriver.login(req.soajs, data, function (err, record) {
 					if (err) {
 						req.soajs.log.error(err);
-						return res.json(req.soajs.buildResponse({code:413}));
+						return res.json(req.soajs.buildResponse({
+							code: 413,
+							msg: config.errors[413]
+						}));
 					}
 					return res.json(req.soajs.buildResponse(null, record));
 				});

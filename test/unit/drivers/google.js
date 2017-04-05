@@ -22,8 +22,9 @@ describe("testing google driver", function () {
 		utils.mapProfile(data, function (error, body) {
 			assert.ifError(error);
 			assert.ok(body);
-			console.log(body);
-			done();
+			utils.preAuthenticate(null, function(){
+				done();
+			});
 		});
 	});
 
