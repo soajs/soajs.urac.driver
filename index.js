@@ -1,4 +1,6 @@
 "use strict";
+var soajsValidator = require ("soajs.core.modules/soajs.core").validator;
+
 var driverConfig = require('./config.js');
 var fs = require("fs");
 var merge = require('merge');
@@ -119,7 +121,8 @@ var driver = {
 			'username': username,
 			'status': 'active'
 		};
-		var pattern = soajs.validator.SchemaPatterns.email;
+		
+		var pattern = soajsValidator.SchemaPatterns.email;
 		if (pattern.test(username)) {
 			delete criteria.username;
 			criteria.email = username;
