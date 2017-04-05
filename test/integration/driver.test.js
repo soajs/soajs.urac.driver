@@ -65,6 +65,9 @@ var lib = {
 		
 		app.post("/ldap/login", function(req, res){
 			
+			req.soajs = {};
+			req.soajs.inputmaskData = req.body;
+			
 			
 			var myDriver = helper.requireModule("./index");
 			var data = {
@@ -80,6 +83,9 @@ var lib = {
 		});
 		
 		app.post("/login", function(req, res){
+			
+			req.soajs = {};
+			req.soajs.inputmaskData = req.body;
 			
 			var myDriver = helper.requireModule("./index");
 			var data = {
@@ -99,6 +105,10 @@ var lib = {
 		});
 		
 		app.get("/getUser", function(req, res){
+			
+			req.soajs = {};
+			req.soajs.inputmaskData = req.query;
+			
 			var myDriver = helper.requireModule("./index");
 			var data = {
 				'id': req.soajs.inputmaskData['id']
@@ -113,6 +123,10 @@ var lib = {
 		
 		
 		app.get("/passport/login/:strategy", function(req, res){
+			
+			req.soajs = {};
+			req.soajs.inputmaskData = req.query;
+			
 			req.soajs.config = config;
 			var uracDriver = helper.requireModule("./index");
 			uracDriver.passportLibInit(req, function (error, passport) {
@@ -127,6 +141,10 @@ var lib = {
 		});
 		
 		app.get("/passport/validate/:strategy", function(req, res){
+			
+			req.soajs = {};
+			req.soajs.inputmaskData = req.query;
+			
 			req.soajs.config = config;
 			var uracDriver = helper.requireModule("./index");
 			uracDriver.passportLibInit(req, function (error, passport) {
@@ -143,7 +161,7 @@ var lib = {
 			});
 		});
 		
-		app.list(4099, function(){
+		app.listen(4099, function(){
 			return cb();
 		});
 		
