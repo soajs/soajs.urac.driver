@@ -61,6 +61,14 @@ var app = express();
 var bodyParser = require('body-parser');
 app.use(bodyParser.json());
 
+var session = require('express-session');
+app.use(session({
+	secret: 'keyboard cat',
+	key: 'sid',
+	cookie: { secure: false }
+}));
+
+
 var lib = {
 
 	injectSOAJS: function (req, res, cb) {
@@ -208,121 +216,13 @@ var lib = {
 					};
 					break;
 			}
-
+			
 			req.soajs = soajs;
 			return cb();
 		});
 	},
 
 	startTestService: function (cb) {
-
-		app.post("/ldap/login", function (req, res) {
-
-			lib.injectSOAJS(req, res, function () {
-				req.soajs.inputmaskData = req.body;
-				req.soajs.config = config;
-
-				var myDriver = helper.requireModule("./index");
-				var data = {
-					'username': req.soajs.inputmaskData['username'],
-					'password': req.soajs.inputmaskData['password']
-				};
-
-				myDriver.ldapLogin(req.soajs, data, function (error, data) {
-					return res.json(req.soajs.buildResponse(error, data));
-				});
-			});
-		});
-
-		app.post("/login", function (req, res) {
-
-			lib.injectSOAJS(req, res, function () {
-				req.soajs.inputmaskData = req.body;
-				req.soajs.config = config;
-				var myDriver = helper.requireModule("./index");
-				var data = {
-					'username': req.soajs.inputmaskData['username'],
-					'password': req.soajs.inputmaskData['password']
-				};
-				myDriver.login(req.soajs, data, function (err, record) {
-					if (err) {
-						req.soajs.log.error(err);
-						return res.json(req.soajs.buildResponse({
-							code: 413,
-							msg: config.errors[413]
-						}));
-					}
-					return res.json(req.soajs.buildResponse(null, record));
-				});
-			});
-
-		});
-
-		app.get("/getUser", function (req, res) {
-
-			lib.injectSOAJS(req, res, function () {
-				req.soajs.inputmaskData = req.query;
-				req.soajs.config = config;
-				var myDriver = helper.requireModule("./index");
-				var data = {
-					'id': req.soajs.inputmaskData['id']
-				};
-				myDriver.getRecord(req.soajs, data, function (err, record) {
-					if (err) {
-						req.soajs.log.error(err);
-					}
-					return res.json(req.soajs.buildResponse(null, record));
-				});
-			});
-
-		});
-
-
-		app.get("/passport/login/:strategy", function (req, res) {
-
-			lib.injectSOAJS(req, res, function () {
-				req.soajs.inputmaskData = req.query;
-				req.soajs.config = config;
-				var uracDriver = helper.requireModule("./index");
-				uracDriver.passportLibInit(req, function (error, passport) {
-					if (error) {
-						return res.json(req.soajs.buildResponse(error));
-					}
-					else {
-						uracDriver.passportLibInitAuth(req, res, passport);
-					}
-				});
-			});
-
-		});
-
-		app.get("/passport/validate/:strategy", function (req, res) {
-
-			lib.injectSOAJS(req, res, function () {
-				req.soajs.inputmaskData = req.query;
-
-				req.soajs.config = config;
-				var uracDriver = helper.requireModule("./index");
-				uracDriver.passportLibInit(req, function (error, passport) {
-					if (error) {
-						return res.json(req.soajs.buildResponse(error));
-					}
-					uracDriver.passportLibAuthenticate(req, res, passport, function (error, user) {
-						if (error) {
-							return res.json(req.soajs.buildResponse(error, null));
-						}
-
-						return res.json(req.soajs.buildResponse(error, {}));
-					});
-				});
-			});
-
-		});
-
-		app.listen(4099, function () {
-			return cb();
-		});
-
 		var config = {
 			"session": true,
 			"roaming": true,
@@ -336,7 +236,7 @@ var lib = {
 			"extKeyRequired": true,
 			"hashIterations": 1024,
 			"seedLength": 32,
-
+			
 			"errors": {
 				399: "Missing Service config. Contact system Admin",
 				400: "Database connection error",
@@ -512,7 +412,7 @@ var lib = {
 						}
 					}
 				},
-
+				
 				"/passport/validate/:strategy": {
 					"_apiInfo": {
 						"l": "Login Through Passport Validate",
@@ -543,7 +443,114 @@ var lib = {
 				}
 			}
 		};
+		
+		app.post("/ldap/login", function (req, res) {
 
+			lib.injectSOAJS(req, res, function () {
+				req.soajs.inputmaskData = req.body;
+				req.soajs.config = config;
+
+				var myDriver = helper.requireModule("./index");
+				var data = {
+					'username': req.soajs.inputmaskData['username'],
+					'password': req.soajs.inputmaskData['password']
+				};
+
+				myDriver.ldapLogin(req.soajs, data, function (error, data) {
+					return res.json(req.soajs.buildResponse(error, data));
+				});
+			});
+		});
+
+		app.post("/login", function (req, res) {
+
+			lib.injectSOAJS(req, res, function () {
+				req.soajs.inputmaskData = req.body;
+				req.soajs.config = config;
+				var myDriver = helper.requireModule("./index");
+				var data = {
+					'username': req.soajs.inputmaskData['username'],
+					'password': req.soajs.inputmaskData['password']
+				};
+				myDriver.login(req.soajs, data, function (err, record) {
+					if (err) {
+						req.soajs.log.error(err);
+						return res.json(req.soajs.buildResponse({
+							code: 413,
+							msg: config.errors[413]
+						}));
+					}
+					return res.json(req.soajs.buildResponse(null, record));
+				});
+			});
+
+		});
+
+		app.get("/getUser", function (req, res) {
+
+			lib.injectSOAJS(req, res, function () {
+				req.soajs.inputmaskData = req.query;
+				req.soajs.config = config;
+				var myDriver = helper.requireModule("./index");
+				var data = {
+					'id': req.soajs.inputmaskData['id']
+				};
+				myDriver.getRecord(req.soajs, data, function (err, record) {
+					if (err) {
+						req.soajs.log.error(err);
+					}
+					return res.json(req.soajs.buildResponse(null, record));
+				});
+			});
+
+		});
+
+		app.get("/passport/login/:strategy", function (req, res) {
+			lib.injectSOAJS(req, res, function () {
+				req.soajs.inputmaskData = req.query;
+				req.soajs.inputmaskData.strategy = req.params.strategy;
+				req.soajs.config = config;
+				
+				var uracDriver = helper.requireModule("./index");
+				uracDriver.passportLibInit(req, function (error, passport) {
+					if (error) {
+						return res.json(req.soajs.buildResponse(error));
+					}
+					else {
+						uracDriver.passportLibInitAuth(req, res, passport);
+					}
+				});
+			});
+
+		});
+
+		app.get("/passport/validate/:strategy", function (req, res) {
+
+			lib.injectSOAJS(req, res, function () {
+				req.soajs.inputmaskData = req.query;
+				req.soajs.inputmaskData.strategy = req.params.strategy;
+				req.soajs.config = config;
+				
+				var uracDriver = helper.requireModule("./index");
+				uracDriver.passportLibInit(req, function (error, passport) {
+					if (error) {
+						return res.json(req.soajs.buildResponse(error));
+					}
+					uracDriver.passportLibAuthenticate(req, res, passport, function (error, user) {
+						if (error) {
+							return res.json(req.soajs.buildResponse(error, null));
+						}
+
+						return res.json(req.soajs.buildResponse(error, {}));
+					});
+				});
+			});
+
+		});
+
+		app.listen(4099, function () {
+			return cb();
+		});
 	},
 	stopTestService: function (cb) {
 		return cb();
@@ -977,7 +984,7 @@ describe("testing driver", function () {
 			};
 			executeMyRequest(params, 'passport/validate/twitter', 'get', function (body) {
 				assert.ok(body);
-				// console.log(JSON.stringify(body, null, 2));
+				console.log(JSON.stringify(body, null, 2));
 				assert.ok(body.errors);
 				done();
 			});
