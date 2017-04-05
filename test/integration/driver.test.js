@@ -2,7 +2,7 @@
 var request = require("request");
 var assert = require("assert");
 var async = require("async");
-var soajs = require("soajs");
+var express = require("express");
 
 var helper = require("../helper.js");
 
@@ -58,6 +58,95 @@ function executeMyRequest(params, apiPath, method, cb) {
 var lib = {
 	
 	startTestService: function (cb) {
+		
+		var app = express();
+		var bodyParser = require('body-parser');
+		app.use(bodyParser.json());
+		
+		app.post("/ldap/login", function(req, res){
+			
+			
+			var myDriver = helper.requireModule("./index");
+			var data = {
+				'username': req.soajs.inputmaskData['username'],
+				'password': req.soajs.inputmaskData['password']
+			};
+			
+			req.soajs.config = config;
+			myDriver.ldapLogin(req.soajs, data, function (error, data) {
+				return res.json(req.soajs.buildResponse(error, data));
+			});
+			
+		});
+		
+		app.post("/login", function(req, res){
+			
+			var myDriver = helper.requireModule("./index");
+			var data = {
+				'username': req.soajs.inputmaskData['username'],
+				'password': req.soajs.inputmaskData['password']
+			};
+			myDriver.login(req.soajs, data, function (err, record) {
+				if (err) {
+					req.soajs.log.error(err);
+					return res.json(req.soajs.buildResponse({
+						code: 413,
+						msg: config.errors[413]
+					}));
+				}
+				return res.json(req.soajs.buildResponse(null, record));
+			});
+		});
+		
+		app.get("/getUser", function(req, res){
+			var myDriver = helper.requireModule("./index");
+			var data = {
+				'id': req.soajs.inputmaskData['id']
+			};
+			myDriver.getRecord(req.soajs, data, function (err, record) {
+				if (err) {
+					req.soajs.log.error(err);
+				}
+				return res.json(req.soajs.buildResponse(null, record));
+			});
+		});
+		
+		
+		app.get("/passport/login/:strategy", function(req, res){
+			req.soajs.config = config;
+			var uracDriver = helper.requireModule("./index");
+			uracDriver.passportLibInit(req, function (error, passport) {
+				if (error) {
+					console.log(error);
+					return res.json(req.soajs.buildResponse(error));
+				}
+				else {
+					uracDriver.passportLibInitAuth(req, res, passport);
+				}
+			});
+		});
+		
+		app.get("/passport/validate/:strategy", function(req, res){
+			req.soajs.config = config;
+			var uracDriver = helper.requireModule("./index");
+			uracDriver.passportLibInit(req, function (error, passport) {
+				if (error) {
+					return res.json(req.soajs.buildResponse(error));
+				}
+				uracDriver.passportLibAuthenticate(req, res, passport, function (error, user) {
+					if (error) {
+						return res.json(req.soajs.buildResponse(error, null));
+					}
+					
+					return res.json(req.soajs.buildResponse(error, {}));
+				});
+			});
+		});
+		
+		app.list(4099, function(){
+			return cb();
+		});
+		
 		var config = {
 			"session": true,
 			"roaming": true,
@@ -279,92 +368,92 @@ var lib = {
 			}
 		};
 		
-		holder.service = new soajs.server.service(config);
-		
-		holder.service.init(function () {
-			
-			holder.service.post("/ldap/login", function (req, res) {
-				var myDriver = helper.requireModule("./index");
-				var data = {
-					'username': req.soajs.inputmaskData['username'],
-					'password': req.soajs.inputmaskData['password']
-				};
-				
-				req.soajs.config = config;
-				myDriver.ldapLogin(req.soajs, data, function (error, data) {
-					return res.json(req.soajs.buildResponse(error, data));
-				});
-				
-			});
-			
-			holder.service.post("/login", function (req, res) {
-				var myDriver = helper.requireModule("./index");
-				var data = {
-					'username': req.soajs.inputmaskData['username'],
-					'password': req.soajs.inputmaskData['password']
-				};
-				myDriver.login(req.soajs, data, function (err, record) {
-					if (err) {
-						req.soajs.log.error(err);
-						return res.json(req.soajs.buildResponse({
-							code: 413,
-							msg: config.errors[413]
-						}));
-					}
-					return res.json(req.soajs.buildResponse(null, record));
-				});
-				
-			});
-			
-			holder.service.get("/getUser", function (req, res) {
-				var myDriver = helper.requireModule("./index");
-				var data = {
-					'id': req.soajs.inputmaskData['id']
-				};
-				myDriver.getRecord(req.soajs, data, function (err, record) {
-					if (err) {
-						req.soajs.log.error(err);
-					}
-					return res.json(req.soajs.buildResponse(null, record));
-				});
-				
-			});
-			
-			
-			holder.service.get('/passport/login/:strategy', function (req, res) {
-				req.soajs.config = config;
-				var uracDriver = helper.requireModule("./index");
-				uracDriver.passportLibInit(req, function (error, passport) {
-					if (error) {
-						console.log(error);
-						return res.json(req.soajs.buildResponse(error));
-					}
-					else {
-						uracDriver.passportLibInitAuth(req, res, passport);
-					}
-				});
-				
-			});
-			
-			holder.service.get('/passport/validate/:strategy', function (req, res) {
-				req.soajs.config = config;
-				var uracDriver = helper.requireModule("./index");
-				uracDriver.passportLibInit(req, function (error, passport) {
-					if (error) {
-						return res.json(req.soajs.buildResponse(error));
-					}
-					uracDriver.passportLibAuthenticate(req, res, passport, function (error, user) {
-						if (error) {
-							return res.json(req.soajs.buildResponse(error, null));
-						}
-						
-						return res.json(req.soajs.buildResponse(error, {}));
-					});
-				});
-			});
-			
-			holder.service.start(cb);
-		});
+		// holder.service = new soajs.server.service(config);
+		//
+		// holder.service.init(function () {
+		//
+		// 	holder.service.post("/ldap/login", function (req, res) {
+		// 		var myDriver = helper.requireModule("./index");
+		// 		var data = {
+		// 			'username': req.soajs.inputmaskData['username'],
+		// 			'password': req.soajs.inputmaskData['password']
+		// 		};
+		//
+		// 		req.soajs.config = config;
+		// 		myDriver.ldapLogin(req.soajs, data, function (error, data) {
+		// 			return res.json(req.soajs.buildResponse(error, data));
+		// 		});
+		//
+		// 	});
+		//
+		// 	holder.service.post("/login", function (req, res) {
+		// 		var myDriver = helper.requireModule("./index");
+		// 		var data = {
+		// 			'username': req.soajs.inputmaskData['username'],
+		// 			'password': req.soajs.inputmaskData['password']
+		// 		};
+		// 		myDriver.login(req.soajs, data, function (err, record) {
+		// 			if (err) {
+		// 				req.soajs.log.error(err);
+		// 				return res.json(req.soajs.buildResponse({
+		// 					code: 413,
+		// 					msg: config.errors[413]
+		// 				}));
+		// 			}
+		// 			return res.json(req.soajs.buildResponse(null, record));
+		// 		});
+		//
+		// 	});
+		//
+		// 	holder.service.get("/getUser", function (req, res) {
+		// 		var myDriver = helper.requireModule("./index");
+		// 		var data = {
+		// 			'id': req.soajs.inputmaskData['id']
+		// 		};
+		// 		myDriver.getRecord(req.soajs, data, function (err, record) {
+		// 			if (err) {
+		// 				req.soajs.log.error(err);
+		// 			}
+		// 			return res.json(req.soajs.buildResponse(null, record));
+		// 		});
+		//
+		// 	});
+		//
+		//
+		// 	holder.service.get('/passport/login/:strategy', function (req, res) {
+		// 		req.soajs.config = config;
+		// 		var uracDriver = helper.requireModule("./index");
+		// 		uracDriver.passportLibInit(req, function (error, passport) {
+		// 			if (error) {
+		// 				console.log(error);
+		// 				return res.json(req.soajs.buildResponse(error));
+		// 			}
+		// 			else {
+		// 				uracDriver.passportLibInitAuth(req, res, passport);
+		// 			}
+		// 		});
+		//
+		// 	});
+		//
+		// 	holder.service.get('/passport/validate/:strategy', function (req, res) {
+		// 		req.soajs.config = config;
+		// 		var uracDriver = helper.requireModule("./index");
+		// 		uracDriver.passportLibInit(req, function (error, passport) {
+		// 			if (error) {
+		// 				return res.json(req.soajs.buildResponse(error));
+		// 			}
+		// 			uracDriver.passportLibAuthenticate(req, res, passport, function (error, user) {
+		// 				if (error) {
+		// 					return res.json(req.soajs.buildResponse(error, null));
+		// 				}
+		//
+		// 				return res.json(req.soajs.buildResponse(error, {}));
+		// 			});
+		// 		});
+		// 	});
+		//
+		// 	holder.service.start(cb);
+		// });
 	},
 	stopTestService: function (cb) {
 		holder.service.stop(cb);
