@@ -306,6 +306,7 @@ var lib = {
 				myDriver.login(req.soajs, data, function (err, record) {
 					if (err) {
 						req.soajs.log.error(err);
+						return res.json(req.soajs.buildResponse({code:413}));
 					}
 					return res.json(req.soajs.buildResponse(null, record));
 				});
@@ -380,6 +381,24 @@ describe("testing driver", function () {
 	});
 	
 	describe("login user method", function () {
+
+		it("Fail. Wrong password", function (done) {
+
+			var params = {
+				qs: {},
+				form: {
+					"username": "user1",
+					"password": "123456xx"
+				}
+			};
+
+			executeMyRequest(params, 'login', 'post', function (body) {
+				console.log(JSON.stringify(body, null, 2));
+				assert.ok(body.errors);
+				done();
+			});
+
+		});
 
 		it("login with username", function (done) {
 			
