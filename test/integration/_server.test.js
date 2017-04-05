@@ -3,7 +3,6 @@ var shell = require('shelljs');
 var assert = require('assert');
 
 var sampleData = require("soajs.mongodb.data/modules/uracDriver");
-var controller;
 
 describe("importing sample data", function () {
 	
@@ -21,7 +20,6 @@ describe("importing sample data", function () {
 	});
 	
 	after(function (done) {
-		controller = require("soajs.controller");
 		setTimeout(function () {
 			require("./driver.test.js");
 			done();

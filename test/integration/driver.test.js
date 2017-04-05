@@ -23,7 +23,7 @@ function executeMyRequest(params, apiPath, method, cb) {
 	function requester(apiName, method, params, cb) {
 		
 		var options = {
-			uri: 'http://localhost:4000/mytest/' + apiName,
+			uri: 'http://localhost:4099/' + apiName,
 			headers: {
 				'Content-Type': 'application/json',
 				key: extKey
