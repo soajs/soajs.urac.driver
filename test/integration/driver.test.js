@@ -4,6 +4,8 @@ var assert = require("assert");
 var async = require("async");
 var express = require("express");
 
+var coreModules = require("soajs.core.modules/soajs.core");
+
 var helper = require("../helper.js");
 
 var holder = {
@@ -46,7 +48,7 @@ function executeMyRequest(params, apiPath, method, cb) {
 		if (params.qs) {
 			options.qs = params.qs;
 		}
-		console.log(options);
+		// console.log(options);
 		request[method](options, function (error, response, body) {
 			assert.ifError(error);
 			assert.ok(body);
@@ -55,337 +57,416 @@ function executeMyRequest(params, apiPath, method, cb) {
 	}
 }
 
+var app = express();
+var bodyParser = require('body-parser');
+app.use(bodyParser.json());
+
 var lib = {
+	
+	injectSOAJS: function(req, cb){
+		
+		coreModules.registry.load({
+			"serviceName": 'mytest',
+			"serviceGroup": 'exampleGroup',
+			"serviceVersion": 1,
+			"designatedPort": 4099,
+			"extKeyRequired": true,
+			"requestTimeout": 30,
+			"requestTimeoutRenewal": 5,
+			"awareness": false,
+			"serviceIp": "127.0.0.1",
+			"swagger": false,
+			"apiList": []
+		}, function (reg) {
+			var soajs = {
+				meta: coreModules.meta,
+				registry: reg,
+				"validator": coreModules.validator,
+				"log": coreModules.getLogger("mytest", {
+					"src": true,
+					"level": "debug",
+					"formatter": {
+						"outputMode": "long"
+					}
+				}),
+				"tenant": {
+					"id": "10d2cb5fc04ce51e06000001",
+					"code": "test",
+					"key": {
+						"iKey": "d1eaaf5fdc35c11119330a8a0273fee9",
+						"eKey": "aa39b5490c4a4ed0e56d7ec1232a428f771e8bb83cfcee16de14f735d0f5da587d5968ec4f785e38570902fd24e0b522b46cb171872d1ea038e88328e7d973ff47d9392f72b2d49566209eb88eb60aed8534a965cf30072c39565bd8d72f68ac"
+					},
+					"application": {
+						"product": "TPROD",
+						"package": "TPROD_BASIC",
+						"appId": "30d2cb5fc04ce51e06000001",
+						"acl": null,
+						"acl_all_env": null,
+						"package_acl": {
+							"mytest": {},
+							"urac": {},
+							"oauth": {},
+							"dashboard": {}
+						}
+					}
+				},
+				"serviceConfig": {
+					
+				}
+			};
+			
+			switch(req.headers.key){
+				case "aa39b5490c4a4ed0e56d7ec1232a428f771e8bb83cfcee16de14f735d0f5da587d5968ec4f785e38570902fd24e0b522b46cb171872d1ea038e88328e7d973ff47d9392f72b2d49566209eb88eb60aed8534a965cf30072c39565bd8d72f68ac":
+					soajs.serviceConfig = {};
+					break;
+				case "":
+					soajs.serviceConfig = {};
+					break;
+				case "":
+					soajs.serviceConfig = {};
+					break;
+			}
+			
+			req.soajs = soajs;
+			console.log(req.soajs);
+			process.exit();
+			
+			return cb();
+		});
+	},
 	
 	startTestService: function (cb) {
 		
-		var app = express();
-		var bodyParser = require('body-parser');
-		app.use(bodyParser.json());
-		
 		app.post("/ldap/login", function(req, res){
 			
-			req.soajs = {};
-			req.soajs.inputmaskData = req.body;
-			
-			
-			var myDriver = helper.requireModule("./index");
-			var data = {
-				'username': req.soajs.inputmaskData['username'],
-				'password': req.soajs.inputmaskData['password']
-			};
-			
-			req.soajs.config = config;
-			myDriver.ldapLogin(req.soajs, data, function (error, data) {
-				return res.json(req.soajs.buildResponse(error, data));
+			lib.injectSOAJS(req, function(){
+				req.soajs.inputmaskData = req.body;
+				
+				
+				var myDriver = helper.requireModule("./index");
+				var data = {
+					'username': req.soajs.inputmaskData['username'],
+					'password': req.soajs.inputmaskData['password']
+				};
+				
+				req.soajs.config = config;
+				myDriver.ldapLogin(req.soajs, data, function (error, data) {
+					return res.json(req.soajs.buildResponse(error, data));
+				});
 			});
-			
 		});
 		
 		app.post("/login", function(req, res){
 			
-			req.soajs = {};
-			req.soajs.inputmaskData = req.body;
-			
-			var myDriver = helper.requireModule("./index");
-			var data = {
-				'username': req.soajs.inputmaskData['username'],
-				'password': req.soajs.inputmaskData['password']
-			};
-			myDriver.login(req.soajs, data, function (err, record) {
-				if (err) {
-					req.soajs.log.error(err);
-					return res.json(req.soajs.buildResponse({
-						code: 413,
-						msg: config.errors[413]
-					}));
-				}
-				return res.json(req.soajs.buildResponse(null, record));
+			lib.injectSOAJS(req, function(){
+				req.soajs.inputmaskData = req.body;
+				
+				var myDriver = helper.requireModule("./index");
+				var data = {
+					'username': req.soajs.inputmaskData['username'],
+					'password': req.soajs.inputmaskData['password']
+				};
+				myDriver.login(req.soajs, data, function (err, record) {
+					if (err) {
+						req.soajs.log.error(err);
+						return res.json(req.soajs.buildResponse({
+							code: 413,
+							msg: config.errors[413]
+						}));
+					}
+					return res.json(req.soajs.buildResponse(null, record));
+				});
 			});
+			
 		});
 		
 		app.get("/getUser", function(req, res){
 			
-			req.soajs = {};
-			req.soajs.inputmaskData = req.query;
-			
-			var myDriver = helper.requireModule("./index");
-			var data = {
-				'id': req.soajs.inputmaskData['id']
-			};
-			myDriver.getRecord(req.soajs, data, function (err, record) {
-				if (err) {
-					req.soajs.log.error(err);
-				}
-				return res.json(req.soajs.buildResponse(null, record));
+			lib.injectSOAJS(req, function(){
+				req.soajs.inputmaskData = req.query;
+				
+				var myDriver = helper.requireModule("./index");
+				var data = {
+					'id': req.soajs.inputmaskData['id']
+				};
+				myDriver.getRecord(req.soajs, data, function (err, record) {
+					if (err) {
+						req.soajs.log.error(err);
+					}
+					return res.json(req.soajs.buildResponse(null, record));
+				});
 			});
+			
 		});
 		
 		
 		app.get("/passport/login/:strategy", function(req, res){
 			
-			req.soajs = {};
-			req.soajs.inputmaskData = req.query;
-			
-			req.soajs.config = config;
-			var uracDriver = helper.requireModule("./index");
-			uracDriver.passportLibInit(req, function (error, passport) {
-				if (error) {
-					console.log(error);
-					return res.json(req.soajs.buildResponse(error));
-				}
-				else {
-					uracDriver.passportLibInitAuth(req, res, passport);
-				}
+			lib.injectSOAJS(req, function(){
+				req.soajs.inputmaskData = req.query;
+				
+				req.soajs.config = config;
+				var uracDriver = helper.requireModule("./index");
+				uracDriver.passportLibInit(req, function (error, passport) {
+					if (error) {
+						console.log(error);
+						return res.json(req.soajs.buildResponse(error));
+					}
+					else {
+						uracDriver.passportLibInitAuth(req, res, passport);
+					}
+				});
 			});
+			
 		});
 		
 		app.get("/passport/validate/:strategy", function(req, res){
 			
-			req.soajs = {};
-			req.soajs.inputmaskData = req.query;
-			
-			req.soajs.config = config;
-			var uracDriver = helper.requireModule("./index");
-			uracDriver.passportLibInit(req, function (error, passport) {
-				if (error) {
-					return res.json(req.soajs.buildResponse(error));
-				}
-				uracDriver.passportLibAuthenticate(req, res, passport, function (error, user) {
+			lib.injectSOAJS(req, function(){
+				req.soajs.inputmaskData = req.query;
+				
+				req.soajs.config = config;
+				var uracDriver = helper.requireModule("./index");
+				uracDriver.passportLibInit(req, function (error, passport) {
 					if (error) {
-						return res.json(req.soajs.buildResponse(error, null));
+						return res.json(req.soajs.buildResponse(error));
 					}
-					
-					return res.json(req.soajs.buildResponse(error, {}));
+					uracDriver.passportLibAuthenticate(req, res, passport, function (error, user) {
+						if (error) {
+							return res.json(req.soajs.buildResponse(error, null));
+						}
+						
+						return res.json(req.soajs.buildResponse(error, {}));
+					});
 				});
 			});
+			
 		});
 		
 		app.listen(4099, function(){
 			return cb();
 		});
 		
-		var config = {
-			"session": true,
-			"roaming": true,
-			"awarenessEnv": true,
-			"serviceVersion": 1,
-			"requestTimeout": 2,
-			"requestTimeoutRenewal": 2,
-			"serviceName": "mytest",
-			"servicePort": 4099,
-			"serviceGroup": "exampleGroup",
-			"extKeyRequired": true,
-			"hashIterations": 1024,
-			"seedLength": 32,
-			
-			"errors": {
-				399: "Missing Service config. Contact system Admin",
-				400: "Database connection error",
-				401: "Unable to log in the user. User not found.",
-				403: "User Not Found!",
-				413: "Problem with the provided password.",
-				601: "Model not found",
-				611: "Invalid tenant id provided",
-				700: "Unable to log in. Ldap connection refused!",
-				701: "Unable to log in. Invalid ldap admin user.",
-				702: "Unable to log in. Invalid ldap admin credentials.",
-				703: "Unable to log in. Invalid ldap user credentials.",
-				704: "Unable to log in. General Error.",
-				705: "Unable to log in. Authentication failed.",
-				706: "Missing Configuration. Contact Web Master."
-			},
-			"schema": {
-				"commonFields": {
-					"model": {
-						"source": ['query.model'],
-						"required": false,
-						"validation": {
-							"type": "string"
-						}
-					}
-				},
-				"/login": {
-					"_apiInfo": {
-						"l": "login"
-					},
-					"commonFields": ["model"],
-					"username": {
-						"source": ['body.username'],
-						"required": true,
-						"validation": {
-							"type": "string"
-						}
-					},
-					"password": {
-						"source": ['body.password'],
-						"required": true,
-						"validation": {
-							"type": "string"
-						}
-					}
-				},
-				"/ldap/login": {
-					"_apiInfo": {
-						"l": "login ldap"
-					},
-					"username": {
-						"source": ['body.username'],
-						"required": true,
-						"validation": {
-							"type": "string"
-						}
-					},
-					"password": {
-						"source": ['body.password'],
-						"required": true,
-						"validation": {
-							"type": "string"
-						}
-					}
-				},
-				"/getUser": {
-					"_apiInfo": {
-						"l": "Get User"
-					},
-					"commonFields": ["model"],
-					"id": {
-						"source": ['query.id'],
-						"required": true,
-						"validation": {
-							"type": "string"
-						}
-					}
-				},
-				"/passport/login/:strategy": {
-					"_apiInfo": {
-						"l": "Login Through Passport",
-						"group": "Guest"
-					},
-					"uracConfig": {
-						"source": ['servicesConfig.urac'],
-						"required": true,
-						"validation": {
-							"type": "object",
-							"properties": {
-								"passportLogin": {
-									"type": "object",
-									"required": true,
-									"properties": {
-										"facebook": {
-											"type": "object",
-											"properties": {
-												"clientID": {
-													"type": "string",
-													"required": true
-												},
-												"clientSecret": {
-													"type": "string",
-													"required": true
-												},
-												"callbackURL": {
-													"type": "string",
-													"required": true
-												}
-											}
-										},
-										"twitter": {
-											"type": "object",
-											"properties": {
-												"clientID": {
-													"type": "string",
-													"required": true
-												},
-												"clientSecret": {
-													"type": "string",
-													"required": true
-												},
-												"callbackURL": {
-													"type": "string",
-													"required": true
-												}
-											}
-										},
-										"google": {
-											"type": "object",
-											"properties": {
-												"clientID": {
-													"type": "string",
-													"required": true
-												},
-												"clientSecret": {
-													"type": "string",
-													"required": true
-												},
-												"callbackURL": {
-													"type": "string",
-													"required": true
-												}
-											}
-										},
-										"github": {
-											"type": "object",
-											"properties": {
-												"clientID": {
-													"type": "string",
-													"required": true
-												},
-												"clientSecret": {
-													"type": "string",
-													"required": true
-												},
-												"callbackURL": {
-													"type": "string",
-													"required": true
-												}
-											}
-										}
-									}
-								}
-							}
-						}
-					},
-					"strategy": {
-						"source": ['params.strategy'],
-						"required": true,
-						"validation": {
-							"type": "string",
-							"enum": ["facebook", "google", "twitter", "github"]
-						}
-					}
-				},
-				
-				"/passport/validate/:strategy": {
-					"_apiInfo": {
-						"l": "Login Through Passport Validate",
-						"group": "Guest"
-					},
-					"strategy": {
-						"source": ['params.strategy'],
-						"required": true,
-						"validation": {
-							"type": "string",
-							"enum": ["facebook", "google", "twitter", "github"]
-						}
-					},
-					"oauth_token": {
-						"source": ['query.oauth_token'],
-						"required": false,
-						"validation": {
-							"type": "string"
-						}
-					},
-					"oauth_verifier": {
-						"source": ['query.oauth_verifier'],
-						"required": false,
-						"validation": {
-							"type": "string"
-						}
-					}
-				}
-			}
-		};
-		
+		// var config = {
+		// 	"session": true,
+		// 	"roaming": true,
+		// 	"awarenessEnv": true,
+		// 	"serviceVersion": 1,
+		// 	"requestTimeout": 2,
+		// 	"requestTimeoutRenewal": 2,
+		// 	"serviceName": "mytest",
+		// 	"servicePort": 4099,
+		// 	"serviceGroup": "exampleGroup",
+		// 	"extKeyRequired": true,
+		// 	"hashIterations": 1024,
+		// 	"seedLength": 32,
+		//
+		// 	"errors": {
+		// 		399: "Missing Service config. Contact system Admin",
+		// 		400: "Database connection error",
+		// 		401: "Unable to log in the user. User not found.",
+		// 		403: "User Not Found!",
+		// 		413: "Problem with the provided password.",
+		// 		601: "Model not found",
+		// 		611: "Invalid tenant id provided",
+		// 		700: "Unable to log in. Ldap connection refused!",
+		// 		701: "Unable to log in. Invalid ldap admin user.",
+		// 		702: "Unable to log in. Invalid ldap admin credentials.",
+		// 		703: "Unable to log in. Invalid ldap user credentials.",
+		// 		704: "Unable to log in. General Error.",
+		// 		705: "Unable to log in. Authentication failed.",
+		// 		706: "Missing Configuration. Contact Web Master."
+		// 	},
+		// 	"schema": {
+		// 		"commonFields": {
+		// 			"model": {
+		// 				"source": ['query.model'],
+		// 				"required": false,
+		// 				"validation": {
+		// 					"type": "string"
+		// 				}
+		// 			}
+		// 		},
+		// 		"/login": {
+		// 			"_apiInfo": {
+		// 				"l": "login"
+		// 			},
+		// 			"commonFields": ["model"],
+		// 			"username": {
+		// 				"source": ['body.username'],
+		// 				"required": true,
+		// 				"validation": {
+		// 					"type": "string"
+		// 				}
+		// 			},
+		// 			"password": {
+		// 				"source": ['body.password'],
+		// 				"required": true,
+		// 				"validation": {
+		// 					"type": "string"
+		// 				}
+		// 			}
+		// 		},
+		// 		"/ldap/login": {
+		// 			"_apiInfo": {
+		// 				"l": "login ldap"
+		// 			},
+		// 			"username": {
+		// 				"source": ['body.username'],
+		// 				"required": true,
+		// 				"validation": {
+		// 					"type": "string"
+		// 				}
+		// 			},
+		// 			"password": {
+		// 				"source": ['body.password'],
+		// 				"required": true,
+		// 				"validation": {
+		// 					"type": "string"
+		// 				}
+		// 			}
+		// 		},
+		// 		"/getUser": {
+		// 			"_apiInfo": {
+		// 				"l": "Get User"
+		// 			},
+		// 			"commonFields": ["model"],
+		// 			"id": {
+		// 				"source": ['query.id'],
+		// 				"required": true,
+		// 				"validation": {
+		// 					"type": "string"
+		// 				}
+		// 			}
+		// 		},
+		// 		"/passport/login/:strategy": {
+		// 			"_apiInfo": {
+		// 				"l": "Login Through Passport",
+		// 				"group": "Guest"
+		// 			},
+		// 			"uracConfig": {
+		// 				"source": ['servicesConfig.urac'],
+		// 				"required": true,
+		// 				"validation": {
+		// 					"type": "object",
+		// 					"properties": {
+		// 						"passportLogin": {
+		// 							"type": "object",
+		// 							"required": true,
+		// 							"properties": {
+		// 								"facebook": {
+		// 									"type": "object",
+		// 									"properties": {
+		// 										"clientID": {
+		// 											"type": "string",
+		// 											"required": true
+		// 										},
+		// 										"clientSecret": {
+		// 											"type": "string",
+		// 											"required": true
+		// 										},
+		// 										"callbackURL": {
+		// 											"type": "string",
+		// 											"required": true
+		// 										}
+		// 									}
+		// 								},
+		// 								"twitter": {
+		// 									"type": "object",
+		// 									"properties": {
+		// 										"clientID": {
+		// 											"type": "string",
+		// 											"required": true
+		// 										},
+		// 										"clientSecret": {
+		// 											"type": "string",
+		// 											"required": true
+		// 										},
+		// 										"callbackURL": {
+		// 											"type": "string",
+		// 											"required": true
+		// 										}
+		// 									}
+		// 								},
+		// 								"google": {
+		// 									"type": "object",
+		// 									"properties": {
+		// 										"clientID": {
+		// 											"type": "string",
+		// 											"required": true
+		// 										},
+		// 										"clientSecret": {
+		// 											"type": "string",
+		// 											"required": true
+		// 										},
+		// 										"callbackURL": {
+		// 											"type": "string",
+		// 											"required": true
+		// 										}
+		// 									}
+		// 								},
+		// 								"github": {
+		// 									"type": "object",
+		// 									"properties": {
+		// 										"clientID": {
+		// 											"type": "string",
+		// 											"required": true
+		// 										},
+		// 										"clientSecret": {
+		// 											"type": "string",
+		// 											"required": true
+		// 										},
+		// 										"callbackURL": {
+		// 											"type": "string",
+		// 											"required": true
+		// 										}
+		// 									}
+		// 								}
+		// 							}
+		// 						}
+		// 					}
+		// 				}
+		// 			},
+		// 			"strategy": {
+		// 				"source": ['params.strategy'],
+		// 				"required": true,
+		// 				"validation": {
+		// 					"type": "string",
+		// 					"enum": ["facebook", "google", "twitter", "github"]
+		// 				}
+		// 			}
+		// 		},
+		//
+		// 		"/passport/validate/:strategy": {
+		// 			"_apiInfo": {
+		// 				"l": "Login Through Passport Validate",
+		// 				"group": "Guest"
+		// 			},
+		// 			"strategy": {
+		// 				"source": ['params.strategy'],
+		// 				"required": true,
+		// 				"validation": {
+		// 					"type": "string",
+		// 					"enum": ["facebook", "google", "twitter", "github"]
+		// 				}
+		// 			},
+		// 			"oauth_token": {
+		// 				"source": ['query.oauth_token'],
+		// 				"required": false,
+		// 				"validation": {
+		// 					"type": "string"
+		// 				}
+		// 			},
+		// 			"oauth_verifier": {
+		// 				"source": ['query.oauth_verifier'],
+		// 				"required": false,
+		// 				"validation": {
+		// 					"type": "string"
+		// 				}
+		// 			}
+		// 		}
+		// 	}
+		// };
 		// holder.service = new soajs.server.service(config);
 		//
 		// holder.service.init(function () {
@@ -474,7 +555,7 @@ var lib = {
 		// });
 	},
 	stopTestService: function (cb) {
-		holder.service.stop(cb);
+		app.stop(cb);
 	}
 };
 
