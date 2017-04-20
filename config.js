@@ -19,6 +19,10 @@ module.exports = {
 		703: "Unable to log in. Invalid ldap user credentials.",
 		704: "Unable to log in. Ldap user not found.",
 		705: "Unable to log in. Authentication failed.",
-		706: "Unable to log in. General Error."
+		706: "Unable to log in. General Error.",
+
+		710: "Unable to log in. YP SSO connection error.",
+		711: "Unable to log in. YP SSO token invalid.",
+		712: "Unable to log in. YP SSO general error."
 	}
 };

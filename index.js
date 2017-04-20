@@ -8,6 +8,8 @@ var ActiveDirectory = require('activedirectory');
 
 var passportLib = require('./lib/passport.js');
 
+var request = require('request');
+
 /**
  * Initialize the Business Logic model
  * @param {SOAJS Object} soajs
@@ -214,24 +216,52 @@ var driver = {
      * @param {Callback(error object, user record object) function} cb
      */
     "ypssoLogin": function (soajs, data, cb) {
-        //TODO: call sso url
-        // get the useRecord
-        var auth = false;
-        var userRecord = {};
-        if (auth) {
+        var ssoToken = data.ssoToken;
+        var ssoURL;
+        var ssoTimeout;
+
+        if (soajs.servicesConfig.urac && soajs.servicesConfig.urac.ssoURL) {
+            ssoURL = soajs.servicesConfig.urac.ssoURL;
+        }
+        else {
+            return cb({"code": 712, "msg": soajs.config.errors[712]});
+        }
+
+        if (soajs.servicesConfig.urac && soajs.servicesConfig.urac.ssoTimeout) {
+            ssoTimeout = soajs.servicesConfig.urac.ssoTimeout;
+        }
+        else {
+            ssoTimeout = 10000;
+        }
+
+        request.post(ssoURL, {form: {subjectId: ssoToken}, timeout: ssoTimeout}, function (error, response, body) {
+            var userRecord;
+
+            if (error) {
+                soajs.log.error(error);
+                return cb({"code": 710, "msg": soajs.config.errors[710]});
+            }
+
+            if (!response || response.statusCode !== 200) {
+                soajs.log.error("YP SSO token invalid!");
+                return cb({"code": 711, "msg": soajs.config.errors[711]});
+            }
+
+            try {
+                userRecord = JSON.parse(body);
+            } catch (err) {
+                soajs.log.error("YP SSO response invalid!");
+                return cb({"code": 712, "msg": soajs.config.errors[712]});
+            }
+
             soajs.log.debug('Authenticated!');
 
             initBLModel(soajs, function (err) {
-                utilities.saveUser(soajs, driver.model, 'ypsso', userRecord, function (error, record) {
-                    return cb(null, record);
-                });
+              utilities.saveUser(soajs, driver.model, 'ypsso', userRecord, function (error, record) {
+                return cb(null, record);
+              });
             });
-
-        }
-        else {
-            soajs.log.error("Authentication failed.");
-            return cb({"code": 705, "msg": soajs.config.errors[705]});
-        }
+        });
     },
 
     /**
