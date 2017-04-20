@@ -217,22 +217,17 @@ var driver = {
      */
     "ypssoLogin": function (soajs, data, cb) {
         var ssoToken = data.ssoToken;
-        var ssoURL;
-        var ssoTimeout;
+        var ypsso;
 
-        if (soajs.servicesConfig.urac && soajs.servicesConfig.urac.ssoURL) {
-            ssoURL = soajs.servicesConfig.urac.ssoURL;
+        if (soajs.servicesConfig.urac && soajs.servicesConfig.urac.ypsso) {
+          ypsso = soajs.servicesConfig.urac.ypsso;
         }
         else {
             return cb({"code": 712, "msg": soajs.config.errors[712]});
         }
 
-        if (soajs.servicesConfig.urac && soajs.servicesConfig.urac.ssoTimeout) {
-            ssoTimeout = soajs.servicesConfig.urac.ssoTimeout;
-        }
-        else {
-            ssoTimeout = 10000;
-        }
+        var ssoURL = ypsso.endpoint;
+        var ssoTimeout = ypsso.timeout || 10000;
 
         request.post(ssoURL, {form: {subjectId: ssoToken}, timeout: ssoTimeout}, function (error, response, body) {
             var userRecord;
