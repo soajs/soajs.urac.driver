@@ -229,7 +229,7 @@ var driver = {
         var ssoURL = ypsso.endpoint;
         var ssoTimeout = ypsso.timeout || 10000;
 
-        request.post(ssoURL, {form: {subjectId: ssoToken}, timeout: ssoTimeout}, function (error, response, body) {
+        request.post(ssoURL, {form: {subjectid: ssoToken}, timeout: ssoTimeout}, function (error, response, body) {
             var userRecord;
 
             if (error) {
