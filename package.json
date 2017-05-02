@@ -35,7 +35,7 @@
     "mocha": "^1.20.0",
     "request": "2.79.0",
     "shelljs": "0.7.5",
-    "soajs.mongodb.data": "1.*"
+    "soajs.mongodb.data": "1.0.*"
   },
   "dependencies": {
     "activedirectory" : "*",
@@ -47,6 +47,6 @@
     "passport-google-oauth": "*",
     "passport-local": "*",
     "passport-twitter": "*",
-    "soajs.core.modules": "1.*"
+    "soajs.core.modules": "1.0.*"
   }
 }
