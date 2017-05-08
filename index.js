@@ -209,27 +209,43 @@ var driver = {
         });
     },
     /**
-     * Login through LDAP
+     * Login through OpenAM
+     *
+     * Expects to have openam configuration object under soajs.servicesConfig.urac.
+     *
+     * Example openam configuration object:
+     * {
+     *   attributesURL: "https://sso.dev.ypg.com/openam/identity/json/attributes",
+     *   attributesMap: [
+     *     { field: 'sAMAccountName', mapTo: 'id' },
+     *     { field: 'sAMAccountName', mapTo: 'username' },
+     *     { field: 'mail', mapTo: 'email' },
+     *     { field: 'givenname', mapTo: 'firstName' },
+     *     { field: 'sn', mapTo: 'lastName' }
+     *   ],
+     *   timeout: 5000
+     * }
      *
      * @param {SOAJS object} soajs
      * @param {Object} data
      * @param {Callback(error object, user record object) function} cb
      */
-    "ypssoLogin": function (soajs, data, cb) {
-        var ssoToken = data.ssoToken;
-        var ypsso;
+    "openamLogin": function (soajs, data, cb) {
+        var token = data.token;
+        var openam;
 
-        if (soajs.servicesConfig.urac && soajs.servicesConfig.urac.ypsso) {
-          ypsso = soajs.servicesConfig.urac.ypsso;
+        if (soajs.servicesConfig.urac && soajs.servicesConfig.urac.openam) {
+          openam = soajs.servicesConfig.urac.openam;
         }
         else {
             return cb({"code": 712, "msg": soajs.config.errors[712]});
         }
 
-        var ssoURL = ypsso.endpoint;
-        var ssoTimeout = ypsso.timeout || 10000;
+        var openamAttributesURL = openam.attributesURL;
+        var openamAttributesMap = openam.attributesMap;
+        var openamTimeout = openam.timeout || 10000;
 
-        request.post(ssoURL, {form: {subjectid: ssoToken}, timeout: ssoTimeout}, function (error, response, body) {
+        request.post(openamAttributesURL, {form: {subjectid: token}, timeout: openamTimeout}, function (error, response, body) {
             var userRecord;
 
             if (error) {
@@ -238,21 +254,21 @@ var driver = {
             }
 
             if (!response || response.statusCode !== 200) {
-                soajs.log.error("YP SSO token invalid!");
+                soajs.log.error("OpenAM token invalid!");
                 return cb({"code": 711, "msg": soajs.config.errors[711]});
             }
 
             try {
                 userRecord = JSON.parse(body);
             } catch (err) {
-                soajs.log.error("YP SSO response invalid!");
+                soajs.log.error("OpenAM response invalid!");
                 return cb({"code": 712, "msg": soajs.config.errors[712]});
             }
 
             soajs.log.debug('Authenticated!');
 
             initBLModel(soajs, function (err) {
-              utilities.saveUser(soajs, driver.model, 'ypsso', userRecord, function (error, record) {
+              utilities.saveUser(soajs, driver.model, 'openam', {userRecord: userRecord, attributesMap: openamAttributesMap}, function (error, record) {
                 return cb(null, record);
               });
             });
