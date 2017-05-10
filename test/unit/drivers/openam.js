@@ -28,4 +28,22 @@ describe('testing openam driver', function () {
       done();
     });
   });
+	
+	it('test mapProfile, setting one the user record attributes to null', function (done) {
+		var data = {
+			userRecord: {
+				attributes: [
+					{ name: 'sAMAccountName', values: [] }
+				]
+			},
+			attributesMap: [
+				{ field: 'sAMAccountName', mapTo: 'id' }
+			]
+		};
+		utils.mapProfile(data, function (error, body) {
+			assert.ifError(error);
+			assert.ok(body);
+			done();
+		});
+	});
 });

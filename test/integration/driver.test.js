@@ -5,8 +5,11 @@ var async = require("async");
 var express = require("express");
 
 var coreModules = require("soajs.core.modules/soajs.core");
+var provision = require("soajs.core.modules/soajs.provision");
 
 var helper = require("../helper.js");
+
+var nock = require("nock");
 
 var extKey = 'aa39b5490c4a4ed0e56d7ec1232a428f771e8bb83cfcee16de14f735d0f5da587d5968ec4f785e38570902fd24e0b522b46cb171872d1ea038e88328e7d973ff47d9392f72b2d49566209eb88eb60aed8534a965cf30072c39565bd8d72f68ac';
 
@@ -149,6 +152,17 @@ var lib = {
 							}
 						},
 						"urac": {
+							"openam": {
+								"attributesURL": "https://sso.dev.ypg.com/openam/identity/json/attributes",
+								"attributesMap": [
+									{"field": 'sAMAccountName', "mapTo": 'id'},
+									{"field": 'sAMAccountName', "mapTo": 'username'},
+									{"field": 'mail', "mapTo": 'email'},
+									{"field": 'givenname', "mapTo": 'firstName'},
+									{"field": 'sn', "mapTo": 'lastName'}
+								],
+								"timeout": 5000
+							},
 							"passportLogin": {
 								"twitter": {
 									"clientID": "qywH8YMduIsKA2RRlUkS50kCZ",
@@ -308,6 +322,21 @@ var lib = {
 						}
 					}
 				},
+				"/openam/login" : {
+					"_apiInfo": {
+						"l": "OpenAM Login",
+						"group": "Guest",
+						"groupMain": true
+					},
+					"commonFields": ["model"],
+					"token": {
+						"source": ['body.token'],
+						"required": true,
+						"validation": {
+							"type": "string"
+						}
+					}
+				},
 				"/passport/login/:strategy": {
 					"_apiInfo": {
 						"l": "Login Through Passport",
@@ -436,6 +465,32 @@ var lib = {
 				}
 			}
 		};
+		
+		app.post('/openam/login', function (req, res) {
+				
+				lib.injectSOAJS(req, res, function () {
+					
+					req.soajs.inputmaskData = req.body;
+					
+					var data = {
+						'token': req.soajs.inputmaskData['token']
+					};
+					
+					req.soajs.config = config;
+					
+					var uracDriver = helper.requireModule("./index");
+					
+					uracDriver.openamLogin(req.soajs, data, function (error, data) {
+						if (error) {
+							return res.json(req.soajs.buildResponse({
+								code: error.code,
+								msg: error.msg
+							}, null));
+						}
+						return res.json(req.soajs.buildResponse(error, data));
+					});
+				});
+		});
 
 		app.post("/ldap/login", function (req, res) {
 
@@ -560,6 +615,94 @@ describe("testing driver", function () {
 			}, 1500);
 		});
 
+	});
+	
+	describe("login through openam", function () {
+		
+		it("Fail. Unable to log in. OpenAM invalid token.", function (done) {
+			var params = {
+				qs: {},
+				form: {
+					"token": "123456"
+				}
+			};
+			
+			executeMyRequest(params, 'openam/login', 'post', function (body) {
+				assert.equal(body.errors.details[0].code, 711);
+				done();
+			});
+		});
+		
+		it("Fail. Unable to log in. OpenAM connection error..", function (done) {
+			nock('https://sso.dev.ypg.com')
+				.post('/openam/identity/json/attributes')
+				.query(true) // any params sent
+				.replyWithError('something awful happened');
+			
+			var params = {
+				qs: {},
+				form: {
+					"token": "123456"
+				}
+			};
+			
+			executeMyRequest(params, 'openam/login', 'post', function (body) {
+				assert.equal(body.errors.details[0].code, 710);
+				done();
+			});
+		});
+		
+		it("Fail. Unable to log in. Error in body.parse", function (done) {
+			var mockedReply = ''; // sending a string instead of an object
+			nock('https://sso.dev.ypg.com')
+				.post('/openam/identity/json/attributes')
+				.query(true) // any params sent
+				.reply(200, mockedReply);
+			
+			var params = {
+				qs: {},
+				form: {
+					"token": "123456"
+				}
+			};
+			
+			executeMyRequest(params, 'openam/login', 'post', function (body) {
+				console.log("-----");
+				console.log(JSON.stringify(body,null,2));
+				console.log("-----");
+				assert.equal(body.errors.details[0].code, 712);
+				done();
+			});
+		});
+		
+		it("Success. Logged in successfully.", function (done) {
+			
+			var mockedReply = {
+				attributes : [
+					{ name: 'sAMAccountName', values: [ 'etienz' ] },
+					{ name: 'mail', values: [ 'mail@mail.com' ] },
+					{ name: 'givenname', values: [ 'etienne' ] },
+					{ name: 'sn', values: [ 'daher' ] }
+				]
+			};
+			nock('https://sso.dev.ypg.com')
+				.post('/openam/identity/json/attributes')
+				.query(true) // any params sent
+				.reply(200, mockedReply);
+			
+			var params = {
+				qs: {},
+				form: {
+					"token": "123456"
+				}
+			};
+			
+			executeMyRequest(params, 'openam/login', 'post', function (body) {
+				assert.equal(body.data.lastName, 'daher');
+				done();
+			});
+		});
+		
 	});
 
 	describe("login user method", function () {
