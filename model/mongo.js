@@ -24,7 +24,7 @@ module.exports = {
 			soajs.mongoDb = new Mongo(config);
 		}
 	},
-
+	
 	/**
 	 * Close the mongo connection
 	 * @param {SOAJS Object} soajs
@@ -32,7 +32,7 @@ module.exports = {
 	"closeConnection": function (soajs) {
 		soajs.mongoDb.closeDb();
 	},
-
+	
 	/**
 	 * Validates the mongo object ID
 	 * @param {Request Object} req
@@ -59,7 +59,7 @@ module.exports = {
 	"findEntries": function (soajs, combo, cb) {
 		soajs.mongoDb.find(combo.collection, combo.condition || {}, combo.fields || null, combo.options || null, cb);
 	},
-
+	
 	/**
 	 * Find one entry based on a condition
 	 * @param {SOAJS Object} soajs
@@ -69,7 +69,7 @@ module.exports = {
 	"findEntry": function (soajs, combo, cb) {
 		soajs.mongoDb.findOne(combo.collection, combo.condition || {}, combo.fields || null, combo.options || null, cb);
 	},
-
+	
 	/**
 	 * Save an entry in the database
 	 * @param {SOAJS Object} soajs
@@ -79,7 +79,7 @@ module.exports = {
 	"saveEntry": function (soajs, combo, cb) {
 		soajs.mongoDb.save(combo.collection, combo.record, cb);
 	},
-
+	
 	/**
 	 * Insert a new entry in the database
 	 * @param {SOAJS Object} soajs
@@ -88,17 +88,5 @@ module.exports = {
 	 */
 	"insertEntry": function (soajs, combo, cb) {
 		soajs.mongoDb.insert(combo.collection, combo.record, cb);
-	},
-
-	/**
-	 * Update an entry in the database
-	 * @param {SOAJS Object} soajs
-	 * @param {Object} combo
-	 * @param {Callback Function} cb
-	 */
-	"updateEntry": function (soajs, combo, cb) {
-		//combo.extraOptions = {'upsert': true}
-		soajs.mongoDb.update(combo.collection, combo.condition, combo.updatedFields, combo.extraOptions || {}, cb);
 	}
-	
 };

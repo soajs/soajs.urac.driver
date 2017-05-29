@@ -1,7 +1,7 @@
 {
   "name": "soajs.urac.driver",
   "description": "soajs URAC Driver",
-  "version": "0.0.2",
+  "version": "1.0.1",
   "author": {
     "name": "soajs team",
     "email": "team@soajs.org"
@@ -19,6 +19,9 @@
   },
   "devDependencies": {
     "async": "2.1.4",
+    "body-parser": "1.15.2",
+    "express": "4.14.0",
+    "express-session": "1.14.2",
     "grunt": "0.4.5",
     "grunt-contrib-jshint": "1.1.0",
     "grunt-jsdoc": "2.1.0",
@@ -29,10 +32,10 @@
     "grunt-coveralls": "1.0.1",
     "jshint": "2.9.4",
     "lodash": "4.17.4",
-    "request": "2.79.0",
+    "mocha": "^1.20.0",
+    "nock":"*",
     "shelljs": "0.7.5",
-    "soajs.mongodb.data": "0.2.*",
-    "soajs.controller": "0.2.*"
+    "soajs.mongodb.data": "1.0.*"
   },
   "dependencies": {
     "activedirectory" : "*",
@@ -44,6 +47,7 @@
     "passport-google-oauth": "*",
     "passport-local": "*",
     "passport-twitter": "*",
-    "soajs.core.modules": "git+https://github.com/soajs/soajs.core.modules.git#develop"
+    "request": "2.79.0",
+    "soajs.core.modules": "1.0.*"
   }
 }
