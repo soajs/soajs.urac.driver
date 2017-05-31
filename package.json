@@ -48,6 +48,6 @@
     "passport-local": "*",
     "passport-twitter": "*",
     "request": "2.79.0",
-    "soajs.core.modules": "git://github.com/soajs/soajs.core.modules#feature/sessionLessCtrl"
+    "soajs.core.modules": "1.0.*"
   }
 }
