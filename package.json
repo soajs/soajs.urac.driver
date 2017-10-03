@@ -38,16 +38,16 @@
     "soajs.mongodb.data": "1.0.*"
   },
   "dependencies": {
-    "activedirectory" : "*",
-    "ldapjs" : "*",
-    "merge": "*",
-    "passport": "*",
-    "passport-facebook": "*",
-    "passport-github": "*",
-    "passport-google-oauth": "*",
-    "passport-local": "*",
-    "passport-twitter": "*",
+    "activedirectory" : "0.7.2",
+    "ldapjs" : "1.0.1",
+    "merge": "1.2.0",
+    "passport": "0.4.0",
+    "passport-facebook": "2.1.1",
+    "passport-github": "1.1.0",
+    "passport-google-oauth": "1.0.0",
+    "passport-local": "1.0.0",
+    "passport-twitter": "1.0.4",
     "request": "2.81.0",
-    "soajs.core.modules": "1.0.*"
+    "soajs.core.modules": "1.0.9"
   }
 }
