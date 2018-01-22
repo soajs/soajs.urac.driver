@@ -153,7 +153,7 @@ var lib = {
 						},
 						"urac": {
 							"openam": {
-								"attributesURL": "https://sso.dev.ypg.com/openam/identity/json/attributes",
+								"attributesURL": "https://test.com/openam/identity/json/attributes",
 								"attributesMap": [
 									{"field": 'sAMAccountName', "mapTo": 'id'},
 									{"field": 'sAMAccountName', "mapTo": 'username'},
@@ -634,7 +634,7 @@ describe("testing driver", function () {
 		});
 		
 		it("Fail. Unable to log in. OpenAM connection error..", function (done) {
-			nock('https://sso.dev.ypg.com')
+			nock('https://test.com')
 				.post('/openam/identity/json/attributes')
 				.query(true) // any params sent
 				.replyWithError('something awful happened');
@@ -654,7 +654,7 @@ describe("testing driver", function () {
 		
 		it("Fail. Unable to log in. Error in body.parse", function (done) {
 			var mockedReply = ''; // sending a string instead of an object
-			nock('https://sso.dev.ypg.com')
+			nock('https://test.com')
 				.post('/openam/identity/json/attributes')
 				.query(true) // any params sent
 				.reply(200, mockedReply);
@@ -685,7 +685,7 @@ describe("testing driver", function () {
 					{ name: 'sn', values: [ 'daher' ] }
 				]
 			};
-			nock('https://sso.dev.ypg.com')
+			nock('https://test.com')
 				.post('/openam/identity/json/attributes')
 				.query(true) // any params sent
 				.reply(200, mockedReply);

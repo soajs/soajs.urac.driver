@@ -215,7 +215,7 @@ var driver = {
      *
      * Example openam configuration object:
      * {
-     *   attributesURL: "https://sso.dev.ypg.com/openam/identity/json/attributes",
+     *   attributesURL: "https://test.com/openam/identity/json/attributes",
      *   attributesMap: [
      *     { field: 'sAMAccountName', mapTo: 'id' },
      *     { field: 'sAMAccountName', mapTo: 'username' },
