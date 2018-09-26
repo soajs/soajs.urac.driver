@@ -31,6 +31,7 @@
     "grunt-istanbul": "0.7.2",
     "grunt-coveralls": "1.0.1",
     "jshint": "2.9.4",
+    "ldapjs": "1.0.2",
     "lodash": "4.17.4",
     "mocha": "^1.20.0",
     "nock": "*",
@@ -39,7 +40,6 @@
   },
   "dependencies": {
     "activedirectory": "0.7.2",
-    "ldapjs": "1.0.2",
     "merge": "1.2.0",
     "passport": "0.4.0",
     "passport-facebook": "2.1.1",
@@ -48,6 +48,6 @@
     "passport-local": "1.0.0",
     "passport-twitter": "1.0.4",
     "request": "2.82.0",
-    "soajs.core.modules": "2.0.2"
+    "soajs.core.modules": "2.0.5"
   }
 }
