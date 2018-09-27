@@ -4,6 +4,9 @@ language: node_js
 
 node_js: 8
 
+services:
+  - mongodb
+
 branches:
   only:
     - master
