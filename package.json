@@ -40,7 +40,7 @@
   },
   "dependencies": {
     "activedirectory": "0.7.2",
-    "merge": "1.2.0",
+    "merge": "1.2.1",
     "passport": "0.4.0",
     "passport-facebook": "2.1.1",
     "passport-github": "1.1.0",
