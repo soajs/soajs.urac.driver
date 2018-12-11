@@ -1,7 +1,7 @@
 {
   "name": "soajs.urac.driver",
   "description": "soajs URAC Driver",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "author": {
     "name": "soajs team",
     "email": "team@soajs.org"
@@ -40,7 +40,7 @@
   },
   "dependencies": {
     "activedirectory": "0.7.2",
-    "merge": "1.2.0",
+    "merge": "1.2.1",
     "passport": "0.4.0",
     "passport-facebook": "2.1.1",
     "passport-github": "1.1.0",
