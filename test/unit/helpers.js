@@ -56,20 +56,18 @@ describe("testing helpers", function () {
 				"profile": {},
 				"groups": ['silver', 'bronze'],
 				"config": {
-					"packages": {},
-					"keys": {
-						"41eb3256ce660a891205d0a0eca19421": {
-							"acl": {
-								"dev": {
-									"urac": {
-										access: false
-									}
-								}
-							},
-							"config": {}
-						}
-					}
 				},
+				"groupsConfig" : [
+					{
+                        "config" : {
+                            "allowedPackages" : {
+                                "TPROD" : [
+                                    "TPROD_BASIC"
+                                ]
+                            }
+                        }
+					}
+				],
 				"tenant": {
 					"id": '10d2cb5fc04ce51e06000001',
 					"code": 'test'
