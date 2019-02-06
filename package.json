@@ -1,7 +1,7 @@
 {
   "name": "soajs.urac.driver",
   "description": "soajs URAC Driver",
-  "version": "1.1.2",
+  "version": "1.2.0",
   "author": {
     "name": "soajs team",
     "email": "team@soajs.org"
@@ -32,7 +32,7 @@
     "grunt-coveralls": "1.0.1",
     "jshint": "2.9.4",
     "ldapjs": "1.0.2",
-    "lodash": "4.17.4",
+    "lodash": "4.17.11",
     "mocha": "^1.20.0",
     "nock": "*",
     "shelljs": "0.7.5",
@@ -48,6 +48,6 @@
     "passport-local": "1.0.0",
     "passport-twitter": "1.0.4",
     "request": "2.84.0",
-    "soajs.core.modules": "2.1.1"
+    "soajs.core.modules": "2.3.0"
   }
 }
