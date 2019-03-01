@@ -47,6 +47,34 @@ function initBLModel(soajs, cb) {
 
 }
 
+function checkUserTenantAccess(record, tenantObj) {
+    if (record && record.tenant && tenantObj && tenantObj.id) {
+        if (record.tenant.id === tenantObj.id) {
+            return true;
+        }
+        if (record.config && record.config.allowedTenants){
+            if (record.config.allowedTenants[tenantObj.id]){
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+function getTenantGroup(record, tenantObj) {
+    if (record && record.tenant && tenantObj && tenantObj.id) {
+        if (record.tenant.id === tenantObj.id) {
+            return ({"groups": record.groups, "tenant": {"id":tenantObj.id,"code":tenantObj.code}});
+        }
+        if (record.config && record.config.allowedTenants){
+            if (record.config.allowedTenants[tenantObj.id]){
+                return ({"groups": record.config.allowedTenants[tenantObj.id], "tenant": {"id":tenantObj.id,"code":tenantObj.code}});
+            }
+        }
+    }
+    return null;
+}
+
 var utilities = require("./lib/helpers.js");
 
 var driver = {
@@ -148,6 +176,9 @@ var driver = {
                     delete record.password;
                     delete record.socialId;
 
+                    if (!checkUserTenantAccess(record, soajs.tenant)) {
+                        return cb(403);
+                    }
                     if (record.groups && Array.isArray(record.groups) && record.groups.length !== 0) {
                         //Get Groups config
                         utilities.findGroups(soajs, driver.model, record, function (record) {
@@ -190,8 +221,10 @@ var driver = {
             utilities.findRecord(soajs, driver.model, criteria, cb, function (record) {
                 delete record.password;
 
-                if (record.groups && Array.isArray(record.groups) && record.groups.length !== 0) {
-                    //Get Groups config
+                let groupInfo = getTenantGroup (record, soajs.tenant);
+                if (groupInfo.groups && Array.isArray(groupInfo.groups) && groupInfo.groups.length !== 0) {
+                    record.groups = groupInfo.groups;
+                    record.tenant = groupInfo.tenant;
                     utilities.findGroups(soajs, driver.model, record, function (record) {
                         returnUser(record);
                     });
@@ -235,7 +268,7 @@ var driver = {
         var openam;
 
         if (soajs.servicesConfig.urac && soajs.servicesConfig.urac.openam) {
-          openam = soajs.servicesConfig.urac.openam;
+            openam = soajs.servicesConfig.urac.openam;
         }
         else {
             return cb({"code": 712, "msg": soajs.config.errors[712]});
@@ -245,7 +278,10 @@ var driver = {
         var openamAttributesMap = openam.attributesMap;
         var openamTimeout = openam.timeout || 10000;
 
-        request.post(openamAttributesURL, {form: {subjectid: token}, timeout: openamTimeout}, function (error, response, body) {
+        request.post(openamAttributesURL, {
+            form: {subjectid: token},
+            timeout: openamTimeout
+        }, function (error, response, body) {
             var userRecord;
 
             if (error) {
@@ -268,9 +304,12 @@ var driver = {
             soajs.log.debug('Authenticated!');
 
             initBLModel(soajs, function (err) {
-              utilities.saveUser(soajs, driver.model, 'openam', {userRecord: userRecord, attributesMap: openamAttributesMap}, function (error, record) {
-                return cb(null, record);
-              });
+                utilities.saveUser(soajs, driver.model, 'openam', {
+                    userRecord: userRecord,
+                    attributesMap: openamAttributesMap
+                }, function (error, record) {
+                    return cb(null, record);
+                });
             });
         });
     },
