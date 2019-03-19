@@ -222,7 +222,7 @@ var driver = {
                 delete record.password;
 
                 let groupInfo = getTenantGroup (record, soajs.tenant);
-                if (groupInfo.groups && Array.isArray(groupInfo.groups) && groupInfo.groups.length !== 0) {
+                if (groupInfo && groupInfo.groups && Array.isArray(groupInfo.groups) && groupInfo.groups.length !== 0) {
                     record.groups = groupInfo.groups;
                     record.tenant = groupInfo.tenant;
                     utilities.findGroups(soajs, driver.model, record, function (record) {
