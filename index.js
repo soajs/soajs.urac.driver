@@ -223,11 +223,15 @@ let driver = {
                         record.tenant = groupInfo.tenant;
                         //Get Groups config
                         utilities.findGroups(soajs, driver.model, record, function (record) {
-                            driver.model.closeConnection(soajs);
-                            return cb(null, record);
+                            returnUser(record);
                         });
                     }
                     else {
+                        returnUser(record);
+                    }
+
+                    function returnUser(record) {
+                        utilities.assureConfig(soajs, record);
                         driver.model.closeConnection(soajs);
                         return cb(null, record);
                     }
