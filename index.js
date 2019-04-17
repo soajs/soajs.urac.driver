@@ -49,6 +49,26 @@ function initBLModel(soajs, cb) {
 function checkUserTenantAccess(record, tenantObj) {
     if (record && record.tenant && tenantObj && tenantObj.id) {
         if (record.tenant.id === tenantObj.id) {
+            return ({"groups": record.groups, "tenant": record.tenant});
+        }
+        if (record.config && record.config.allowedTenants) {
+            for (let i = 0; i < record.config.allowedTenants.length; i++) {
+                if (record.config.allowedTenants[i].tenant && (record.config.allowedTenants[i].tenant.id === tenantObj.id)) {
+                    let response = {
+                        "groups": record.config.allowedTenants[i].groups,
+                        "tenant": record.config.allowedTenants[i].tenant
+                    };
+                    return (response);
+                }
+            }
+        }
+    }
+    return null;
+}
+/*
+function checkUserTenantAccess(record, tenantObj) {
+    if (record && record.tenant && tenantObj && tenantObj.id) {
+        if (record.tenant.id === tenantObj.id) {
             return true;
         }
         if (record.config && record.config.allowedTenants) {
@@ -59,7 +79,8 @@ function checkUserTenantAccess(record, tenantObj) {
     }
     return false;
 }
-
+*/
+/*
 function getTenantGroup(record, tenantObj) {
     if (record && record.tenant && tenantObj && tenantObj.id) {
         if (record.tenant.id === tenantObj.id) {
@@ -79,7 +100,7 @@ function getTenantGroup(record, tenantObj) {
     }
     return null;
 }
-
+*/
 const utilities = require("./lib/helpers.js");
 
 let driver = {
@@ -157,13 +178,13 @@ let driver = {
             utilities.findRecord(soajs, driver.model, criteria, cb, function (record) {
                 delete record.password;
                 delete record.socialId;
-                if (!checkUserTenantAccess(record, soajs.tenant)) {
+                let userTenant = checkUserTenantAccess(record, soajs.tenant);
+                if (!userTenant) {
                     return cb(403);
                 }
-                let groupInfo = getTenantGroup(record, soajs.tenant);
-                if (groupInfo && groupInfo.groups && Array.isArray(groupInfo.groups) && groupInfo.groups.length !== 0) {
-                    record.groups = groupInfo.groups;
-                    record.tenant = groupInfo.tenant;
+                if (userTenant && userTenant.groups && Array.isArray(userTenant.groups) && userTenant.groups.length !== 0) {
+                    record.groups = userTenant.groups;
+                    record.tenant = userTenant.tenant;
                     //Get Groups config
                     utilities.findGroups(soajs, driver.model, record, function (record) {
                         driver.model.closeConnection(soajs);
@@ -214,13 +235,13 @@ let driver = {
                     delete record.password;
                     delete record.socialId;
 
-                    if (!checkUserTenantAccess(record, soajs.tenant)) {
+                    let userTenant = checkUserTenantAccess(record, soajs.tenant);
+                    if (!userTenant) {
                         return cb(403);
                     }
-                    let groupInfo = getTenantGroup(record, soajs.tenant);
-                    if (groupInfo && groupInfo.groups && Array.isArray(groupInfo.groups) && groupInfo.groups.length !== 0) {
-                        record.groups = groupInfo.groups;
-                        record.tenant = groupInfo.tenant;
+                    if (userTenant && userTenant.groups && Array.isArray(userTenant.groups) && userTenant.groups.length !== 0) {
+                        record.groups = userTenant.groups;
+                        record.tenant = userTenant.tenant;
                         //Get Groups config
                         utilities.findGroups(soajs, driver.model, record, function (record) {
                             returnUser(record);
@@ -279,7 +300,7 @@ let driver = {
             utilities.findRecord(soajs, driver.model, criteria, cb, function (record) {
                 delete record.password;
 
-                let groupInfo = getTenantGroup(record, soajs.tenant);
+                let groupInfo = checkUserTenantAccess(record, soajs.tenant);
                 if (groupInfo && groupInfo.groups && Array.isArray(groupInfo.groups) && groupInfo.groups.length !== 0) {
                     record.groups = groupInfo.groups;
                     record.tenant = groupInfo.tenant;
