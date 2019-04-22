@@ -1,33 +1,31 @@
 "use strict";
-var Mongo = require("soajs.core.modules").mongo;
+const Mongo = require("soajs.core.modules").mongo;
 
 module.exports = {
 	/**
 	 * Initialize the mongo connection
-	 * @param {SOAJS Object} soajs
 	 */
 	"initConnection": function (soajs) {
 		if (soajs.inputmaskData && soajs.inputmaskData.isOwner) {
 			soajs.mongoDb = new Mongo(soajs.meta.tenantDB(soajs.registry.tenantMetaDB, 'urac', soajs.inputmaskData.tCode));
 		}
 		else {
-			var tcode = soajs.tenant.code;
+			let tcode = soajs.tenant.code;
 			if (soajs.tenant.roaming && soajs.tenant.roaming.code) {
 				tcode = soajs.tenant.roaming.code;
 			}
-			var tenantMetaDB = soajs.registry.tenantMetaDB;
+			let tenantMetaDB = soajs.registry.tenantMetaDB;
 			if (soajs.tenant.roaming && soajs.tenant.roaming.tenantMetaDB) {
 				tenantMetaDB = soajs.tenant.roaming.tenantMetaDB;
 			}
 			
-			var config = soajs.meta.tenantDB(tenantMetaDB, 'urac', tcode);
+			let config = soajs.meta.tenantDB(tenantMetaDB, 'urac', tcode);
 			soajs.mongoDb = new Mongo(config);
 		}
 	},
 	
 	/**
 	 * Close the mongo connection
-	 * @param {SOAJS Object} soajs
 	 */
 	"closeConnection": function (soajs) {
 		soajs.mongoDb.closeDb();
@@ -35,11 +33,9 @@ module.exports = {
 	
 	/**
 	 * Validates the mongo object ID
-	 * @param {Request Object} req
-	 * @param {Callback Function} cb
 	 */
 	"validateId": function (soajs, id) {
-		var id1;
+		let id1;
 		try {
 			id1 = soajs.mongoDb.ObjectId(id.toString());
 			return id1;
@@ -52,9 +48,6 @@ module.exports = {
 	
 	/**
 	 * Find multiple entries based on a condition
-	 * @param {SOAJS Object} soajs
-	 * @param {Object} combo
-	 * @param {Callback Function} cb
 	 */
 	"findEntries": function (soajs, combo, cb) {
 		soajs.mongoDb.find(combo.collection, combo.condition || {}, combo.fields || null, combo.options || null, cb);
@@ -62,9 +55,6 @@ module.exports = {
 	
 	/**
 	 * Find one entry based on a condition
-	 * @param {SOAJS Object} soajs
-	 * @param {Object} combo
-	 * @param {Callback Function} cb
 	 */
 	"findEntry": function (soajs, combo, cb) {
 		soajs.mongoDb.findOne(combo.collection, combo.condition || {}, combo.fields || null, combo.options || null, cb);
@@ -72,9 +62,6 @@ module.exports = {
 	
 	/**
 	 * Save an entry in the database
-	 * @param {SOAJS Object} soajs
-	 * @param {Object} combo
-	 * @param {Callback Function} cb
 	 */
 	"saveEntry": function (soajs, combo, cb) {
 		soajs.mongoDb.save(combo.collection, combo.record, cb);
@@ -82,9 +69,6 @@ module.exports = {
 	
 	/**
 	 * Insert a new entry in the database
-	 * @param {SOAJS Object} soajs
-	 * @param {Object} combo
-	 * @param {Callback Function} cb
 	 */
 	"insertEntry": function (soajs, combo, cb) {
 		soajs.mongoDb.insert(combo.collection, combo.record, cb);

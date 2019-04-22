@@ -65,6 +65,7 @@ function checkUserTenantAccess(record, tenantObj) {
     }
     return null;
 }
+
 /*
 function checkUserTenantAccess(record, tenantObj) {
     if (record && record.tenant && tenantObj && tenantObj.id) {
@@ -187,11 +188,21 @@ let driver = {
                     record.tenant = userTenant.tenant;
                     //Get Groups config
                     utilities.findGroups(soajs, driver.model, record, function (record) {
-                        driver.model.closeConnection(soajs);
-                        return cb(null, record);
+                        returnUser(record);
                     });
                 }
                 else {
+                    returnUser(record);
+                }
+
+                //TODO: add last login here
+                record.lastLogin = new Date().getTime();
+                utilities.saveRecord(soajs, driver.model, record, () => {
+
+                });
+
+                function returnUser(record) {
+                    utilities.assureConfig(soajs, record);
                     driver.model.closeConnection(soajs);
                     return cb(null, record);
                 }
@@ -250,6 +261,12 @@ let driver = {
                     else {
                         returnUser(record);
                     }
+
+                    //TODO: add last login here
+                    record.lastLogin = new Date().getTime();
+                    utilities.saveRecord(soajs, driver.model, record, () => {
+
+                    });
 
                     function returnUser(record) {
                         utilities.assureConfig(soajs, record);
