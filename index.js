@@ -197,7 +197,7 @@ let driver = {
 
                 //TODO: add last login here
                 record.lastLogin = new Date().getTime();
-                utilities.saveRecord(soajs, driver.model, record, () => {
+                utilities.updateLastLogin(soajs, driver.model, record, () => {
 
                 });
 
@@ -264,7 +264,7 @@ let driver = {
 
                     //TODO: add last login here
                     record.lastLogin = new Date().getTime();
-                    utilities.saveRecord(soajs, driver.model, record, () => {
+                    utilities.updateLastLogin(soajs, driver.model, record, () => {
 
                     });
 
