@@ -49,6 +49,7 @@
     "activedirectory": "0.7.2",
     "merge": "1.2.1",
     "passport": "0.4.0",
+    "passport-azure-ad": "4.0.0",
     "passport-facebook": "2.1.1",
     "passport-github": "1.1.0",
     "passport-google-oauth": "1.0.0",
