@@ -11,16 +11,27 @@ module.exports = {
         }
         else {
             let tcode = soajs.tenant.code;
-            if (soajs.tenant.roaming && soajs.tenant.roaming.code) {
-                tcode = soajs.tenant.roaming.code;
-            }
             let tenantMetaDB = soajs.registry.tenantMetaDB;
-            if (soajs.tenant.roaming && soajs.tenant.roaming.tenantMetaDB) {
-                tenantMetaDB = soajs.tenant.roaming.tenantMetaDB;
+            let sunTenant_tCode = null;
+            if (soajs.tenant.roaming) {
+                if (soajs.tenant.roaming.code) {
+                    tcode = soajs.tenant.roaming.code;
+                }
+                if (soajs.tenant.roaming.tenantMetaDB) {
+                    tenantMetaDB = soajs.tenant.roaming.tenantMetaDB;
+                }
+            }
+            else if (soajs.tenant.main && soajs.tenant.main.code) {
+                sunTenant_tCode = tcode;
+                tcode = soajs.tenant.main.code;
             }
 
             let config = soajs.meta.tenantDB(tenantMetaDB, 'urac', tcode);
             soajs.mongoDb = new Mongo(config);
+            if (sunTenant_tCode) {
+                let sunTenant_config = soajs.meta.tenantDB(tenantMetaDB, 'urac', sunTenant_tCode);
+                soajs.mongoDb_sub = new Mongo(sunTenant_config);
+            }
         }
     },
 
@@ -29,6 +40,8 @@ module.exports = {
      */
     "closeConnection": function (soajs) {
         soajs.mongoDb.closeDb();
+        if (soajs.mongoDb_sub)
+            soajs.mongoDb_sub.closeDb();
     },
 
     /**
@@ -50,7 +63,10 @@ module.exports = {
      * Find multiple entries based on a condition
      */
     "findEntries": function (soajs, combo, cb) {
-        soajs.mongoDb.find(combo.collection, combo.condition || {}, combo.fields || null, combo.options || null, cb);
+        if (combo.collection === "groups" && soajs.mongoDb_sub)
+            soajs.mongoDb_sub.find(combo.collection, combo.condition || {}, combo.fields || null, combo.options || null, cb);
+        else
+            soajs.mongoDb.find(combo.collection, combo.condition || {}, combo.fields || null, combo.options || null, cb);
     },
 
     /**
