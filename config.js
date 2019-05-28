@@ -1,28 +1,34 @@
 'use strict';
 
 module.exports = {
-	"model": 'mongo',
-	"hashIterations": 1024,
-	"seedLength": 32,
-	"errors": {
-		399: "Missing Service config. Contact system Admin",
-		400: "Database connection error",
-		401: "Unable to log in the user. User not found.",
-		403: "User Not Found!",
-		413: "Problem with the provided password.",
-		601: "Model not found",
-		611: "Invalid tenant id provided",
-		
-		700: "Unable to log in. Ldap connection refused!",
-		701: "Unable to log in. Invalid ldap admin user.",
-		702: "Unable to log in. Invalid ldap admin credentials.",
-		703: "Unable to log in. Invalid ldap user credentials.",
-		704: "Unable to log in. Ldap user not found.",
-		705: "Unable to log in. Authentication failed.",
-		706: "Unable to log in. General Error.",
+    "model": 'mongo',
+    "hashIterations": 1024,
+    "seedLength": 32,
+    "errors": {
 
-		710: "Unable to log in. OpenAM connection error.",
-		711: "Unable to log in. OpenAM token invalid.",
-		712: "Unable to log in. OpenAM general error."
-	}
+        400: "Model error",
+        402: "Problem with the provided password",
+        403: "Unable to log in the user. User not found",
+        404: "Problem with the provided user ID",
+        410: "Unable to find passport driver",
+        411: "Passport mapProfile error",
+        412: "Passport profile is empty",
+        420: "Missing serviceConfig for urac.passportLogin",
+        601: "Model not found",
+
+        720: "Unable to authenticated with passport",
+
+        700: "Unable to log in. Ldap connection refused!",
+        701: "Unable to log in. Invalid ldap admin user.",
+        702: "Unable to log in. Invalid ldap admin credentials.",
+        703: "Unable to log in. Invalid ldap user credentials.",
+        704: "Unable to log in. Ldap user not found.",
+        705: "Unable to log in. Authentication failed.",
+        706: "Unable to log in. Missing serviceConfig for urac.ldapServer",
+
+        710: "Unable to log in. OpenAM connection error.",
+        711: "Unable to log in. OpenAM token invalid.",
+        712: "Unable to log in. Missing serviceConfig for urac.openam",
+        713: "Unable to log in. General error while parsing response"
+    }
 };
