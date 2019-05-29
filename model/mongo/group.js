@@ -1,6 +1,6 @@
 "use strict";
 const colName = "groups";
-const core = require("soajs");
+const core = require("soajs.core.modules");
 const Mongo = core.mongo;
 
 let indexing = {};
