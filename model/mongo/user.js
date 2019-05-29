@@ -7,8 +7,9 @@ let indexing = {};
 
 function User(soajs, mongoCore) {
     let __self = this;
-    if (mongoCore)
+    if (mongoCore) {
         __self.mongoCore = mongoCore;
+    }
     if (!__self.mongoCore) {
         let tCode = soajs.tenant.code;
         let tenantMetaDB = soajs.registry.tenantMetaDB;
@@ -21,16 +22,31 @@ function User(soajs, mongoCore) {
             if (soajs.tenant.roaming.tenantMetaDB) {
                 tenantMetaDB = soajs.tenant.roaming.tenantMetaDB;
             }
-        }
-        else if (soajs.tenant.main && soajs.tenant.main.code) {
+        } else if (soajs.tenant.main && soajs.tenant.main.code) {
             tCode = soajs.tenant.main.code;
             tId = soajs.tenant.main.id;
         }
-        __self.mongoCore = new Mongo(soajs.meta.tenantDB(tenantMetaDB, 'urac', tCode));
+        __self.mongoCore = new Mongo(soajs.meta.tenantDB(tenantMetaDB, "urac", tCode));
         if (indexing && tId && !indexing[tId]) {
             indexing[tId] = true;
-            __self.mongoCore.createIndex(colName, {'username': 1}, {unique: true}, function (err, result) {
+            __self.mongoCore.createIndex(colName, {"username": 1}, {unique: true}, function () {
             });
+            __self.mongoCore.createIndex(colName, {"email": 1}, {unique: true}, function () {
+            });
+            __self.mongoCore.createIndex(colName,
+                {
+                    'config.allowedTenants.tenant.pin.code': 1,
+                    'config.allowedTenants.tenant.id': 1
+                }, {unique: true}, function () {
+                });
+            __self.mongoCore.createIndex(colName,
+                {
+                    'tenant.pin.code': 1,
+                    'tenant.id': 1
+                }, {unique: true}, function () {
+                });
+
+
             soajs.log.debug("Indexes @ " + colName + " for " + tId + " Updated!");
         }
     }
@@ -48,9 +64,6 @@ function User(soajs, mongoCore) {
 User.prototype.validateId = function (data, cb) {
     let __self = this;
     try {
-        if (process.env.SOAJS_TEST) {
-            return cb(null, data.id);
-        }
         let _id = __self.mongoCore.ObjectId(data.id);
         return cb(null, _id);
     } catch (err) {
@@ -70,7 +83,7 @@ User.prototype.validateId = function (data, cb) {
  */
 User.prototype.lastLogin = function (data, cb) {
     let __self = this;
-    if (!data.username || !data.lastLogin) {
+    if (!data || !data.username || !data.lastLogin) {
         let error = new Error("username and lastLogin are required.");
         return cb(error, null);
     }
@@ -98,7 +111,7 @@ User.prototype.lastLogin = function (data, cb) {
  */
 User.prototype.getSocialNetworkUser = function (data, cb) {
     let __self = this;
-    if (!data.id && !data.mode) {
+    if (!!data || (data.id && !data.mode)) {
         let error = new Error("id and mode are required.");
         return cb(error, null);
     }
@@ -165,43 +178,42 @@ User.prototype.insertSocialNetworkUser = function (data, cb) {
  *
  * @param data
  *  should have:
- *      required (username, status)
+ *      required (username)
  *
  * @param cb
  */
-User.prototype.getUserByUsernameStatus = function (data, cb) {
+/*
+User.prototype.getUserByUsername = function (data, cb) {
     let __self = this;
-    if (!data.username || !data.status) {
+    if (!data || !data.username) {
         let error = new Error("username and status are required.");
         return cb(error, null);
     }
     let condition = {
-        'username': data.username,
-        'status': data.status
+        'username': data.username
     };
     __self.mongoCore.findOne(colName, condition, null, null, (err, records) => {
         return cb(err, records);
     });
 };
-
+*/
 /**
  * To get a user by email and status
  *
  * @param data
  *  should have:
- *      required (email, status)
+ *      required (email)
  *
  * @param cb
  */
-User.prototype.getUserByEmailStatus = function (data, cb) {
+User.prototype.getUserByEmail = function (data, cb) {
     let __self = this;
-    if (!data.email || !data.status) {
+    if (!data || !data.email) {
         let error = new Error("email and status are required.");
         return cb(error, null);
     }
     let condition = {
-        'email': data.email,
-        'status': data.status
+        'email': data.email
     };
     __self.mongoCore.findOne(colName, condition, null, null, (err, records) => {
         return cb(err, records);
@@ -213,13 +225,13 @@ User.prototype.getUserByEmailStatus = function (data, cb) {
  *
  * @param data
  *  should have:
- *      required (email, status)
+ *      required (email or id)
  *
  * @param cb
  */
 User.prototype.getUserByUsernameOrId = function (data, cb) {
     let __self = this;
-    if (!data.id && !data.username) {
+    if (!data || (!data.id && !data.username)) {
         let error = new Error("id or username is required.");
         return cb(error, null);
     }
@@ -243,21 +255,16 @@ User.prototype.getUserByUsernameOrId = function (data, cb) {
  *
  * @param cb
  */
-User.prototype.getUserByPinAndStatus = function (data, cb) {
+User.prototype.getUserByPin = function (data, cb) {
     let __self = this;
-    if (!data.pin || !data.status) {
-        let error = new Error("pin and status is required.");
+    if (!data || !data.pin) {
+        let error = new Error("pin is required.");
         return cb(error, null);
     }
     let condition = {
-        $and: [
-            {
-                $or: [
-                    {'tenant.pin.code': data.pin},
-                    {'config.allowedTenants.tenant.pin.code': data.pin}
-                ]
-            },
-            {'status': data.status}
+        $or: [
+            {'tenant.pin.code': data.pin},
+            {'config.allowedTenants.tenant.pin.code': data.pin}
         ]
     };
     __self.mongoCore.findOne(colName, condition, null, null, (err, record) => {

@@ -7,8 +7,9 @@ let indexing = {};
 
 function Group(soajs, mongoCore) {
     let __self = this;
-    if (mongoCore)
+    if (mongoCore) {
         __self.mongoCore = mongoCore;
+    }
     if (!__self.mongoCore) {
         let tCode = soajs.tenant.code;
         let tenantMetaDB = soajs.registry.tenantMetaDB;
@@ -21,15 +22,14 @@ function Group(soajs, mongoCore) {
             if (soajs.tenant.roaming.tenantMetaDB) {
                 tenantMetaDB = soajs.tenant.roaming.tenantMetaDB;
             }
-        }
-        else if (soajs.tenant.main && soajs.tenant.main.code) {
+        } else if (soajs.tenant.main && soajs.tenant.main.code) {
             tCode = soajs.tenant.main.code;
             tId = soajs.tenant.main.id;
         }
-        __self.mongoCore = new Mongo(soajs.meta.tenantDB(tenantMetaDB, 'urac', tCode));
+        __self.mongoCore = new Mongo(soajs.meta.tenantDB(tenantMetaDB, "urac", tCode));
         if (indexing && tId && !indexing[tId]) {
             indexing[tId] = true;
-            __self.mongoCore.createIndex(colName, {'code': 1, 'tenant.id': 1}, {unique: true}, function (err, result) {
+            __self.mongoCore.createIndex(colName, {"code": 1, "tenant.id": 1}, {unique: true}, () =>{
             });
             soajs.log.debug("Indexes @ " + colName + " for " + tId + " Updated!");
         }
