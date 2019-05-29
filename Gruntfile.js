@@ -80,7 +80,7 @@ module.exports = function (grunt) {
                 }
             },
             files: {
-                src: ['index.js', 'config.js', 'lib/*.js', 'lib/drivers/*.js', 'model/mongo/*.js']
+                src: ['index.js', 'config.js', 'lib/*.js', 'lib/drivers/*.js', 'model/mongo/*.js', 'test/helper.js', 'test/unit/**/*.js']
             },
             gruntfile: {
                 src: 'Gruntfile.js'

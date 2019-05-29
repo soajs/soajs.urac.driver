@@ -48,9 +48,6 @@ function Group(soajs, mongoCore) {
 Group.prototype.validateId = function (data, cb) {
     let __self = this;
     try {
-        if (process.env.SOAJS_TEST) {
-            return cb(null, data.id);
-        }
         let _id = __self.mongoCore.ObjectId(data.id);
         return cb(null, _id);
     } catch (err) {

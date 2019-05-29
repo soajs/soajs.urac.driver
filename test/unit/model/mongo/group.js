@@ -1,0 +1,143 @@
+"use strict";
+
+const coreModules = require("soajs.core.modules");
+const core = coreModules.core;
+const helper = require("../../../helper.js");
+const Model = helper.requireModule('./model/mongo/group.js');
+//const assert = require('assert');
+
+describe("Unit test for: model - group", function () {
+    let soajs = {
+        "meta": core.meta,
+        "tenant": {
+            "code": "TES0",
+            "id": ""
+        },
+        "registry": {
+            "tenantMetaDB": {
+                "urac": {
+                    "prefix": "",
+                    "cluster": "test_cluster",
+                    "name": "#TENANT_NAME#_urac",
+                    "servers": [
+                        {
+                            "host": "127.0.0.1",
+                            "port": 27017
+                        }
+                    ],
+                    "credentials": null,
+                    "streaming": {
+                        "batchSize": 1000
+                    },
+                    "URLParam": {
+                        "bufferMaxEntries": 0
+                    },
+                    "timeConnected": 1552747598093
+                }
+            }
+        },
+        "log": {
+            "error": (msg) => {
+                console.log(msg);
+            },
+            "debug": (msg) => {
+                console.log(msg);
+            }
+        }
+    };
+
+
+    describe("Constructor - with tenant", function () {
+        let what2expect = {ip: '127.0.0.1', HATask: null, fetched: null};
+        let modelObj = null;
+        before((done) => {
+            modelObj = new Model(soajs);
+            done();
+        });
+        after((done) => {
+            modelObj.closeConnection();
+            done();
+        });
+
+        it("test - validateId", function (done) {
+            modelObj({"id": "5c8d0c505653de3985aa0ffe"}, (error, id) => {
+                console.log(id);
+                done();
+            });
+        });
+        it("test - getGroups - with no data", function (done) {
+            modelObj.getGroups(null, (error, records) => {
+                console.log(records);
+                done();
+            })
+        });
+        it("test - getGroups - with data", function (done) {
+            modelObj.getGroups({"groups": []}, (error, records) => {
+                console.log(records);
+                done();
+            })
+        });
+        it("test - getGroups - with data & tId", function (done) {
+            modelObj.getGroups({"groups": [], "tId": ""}, (error, records) => {
+                console.log(records);
+                done();
+            })
+        });
+    });
+
+    describe("Test - with sub tenant", function () {
+        soajs.tenant.main = {
+            "code": "TES1",
+            "id": ""
+        };
+        let modelObj = null;
+        before((done) => {
+            modelObj = new Model(soajs);
+            done();
+        });
+        after((done) => {
+            modelObj.closeConnection();
+            done();
+        });
+
+    });
+    describe("test - with roaming", function () {
+        delete soajs.tenant.main;
+        soajs.tenant.roaming = {
+            "code": "TES2",
+            "id": "",
+            "tenantMetaDB": {
+                "urac": {
+                    "prefix": "",
+                    "cluster": "test_cluster",
+                    "name": "#TENANT_NAME#_urac",
+                    "servers": [
+                        {
+                            "host": "127.0.0.1",
+                            "port": 27017
+                        }
+                    ],
+                    "credentials": null,
+                    "streaming": {
+                        "batchSize": 1000
+                    },
+                    "URLParam": {
+                        "bufferMaxEntries": 0
+                    },
+                    "timeConnected": 1552747598093
+                }
+            }
+        };
+        let modelObj = null;
+        before((done) => {
+            modelObj = new Model(soajs);
+            done();
+        });
+        after((done) => {
+            modelObj.closeConnection();
+            done();
+        });
+
+
+    });
+});
