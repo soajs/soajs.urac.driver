@@ -60,7 +60,7 @@ describe("Unit test for: model - group", function () {
         });
 
         it("test - validateId", function (done) {
-            modelObj({"id": "5c8d0c505653de3985aa0ffe"}, (error, id) => {
+            modelObj.validateId({"id": "5c8d0c505653de3985aa0ffe"}, (error, id) => {
                 console.log(id);
                 done();
             });

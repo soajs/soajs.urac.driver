@@ -1,9 +1,10 @@
 "use strict";
 
 const shell = require('shelljs');
+const assert = require('assert');
 let sampleData = require("../data/index");
 
-describe("Starting Gateway Unit test", () => {
+describe("Starting URAC driver Unit test", () => {
     it("Init unit test", (done) => {
         done();
     });
