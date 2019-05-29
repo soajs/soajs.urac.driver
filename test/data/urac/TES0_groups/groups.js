@@ -4,7 +4,7 @@ let records = [
         code: "owner",
         name: "Owner Group",
         owner: true,
-        description: "this is the owner group that owns the dashboard",
+        description: "this is the owner group",
         config: {
             allowedPackages: {
                 DSBRD: [
@@ -22,7 +22,7 @@ let records = [
         code: "devop",
         name: "Devop Group",
         owner: true,
-        description: "this is the owner group with wrong tenant.id",
+        description: "this is the devop group",
         config: {
             allowedPackages: {
                 DSBRD: [
@@ -31,7 +31,7 @@ let records = [
             }
         },
         tenant: {
-            id: "5c0e74ba9acc3c5a84a51257",
+            id: "5c0e74ba9acc3c5a84a51259",
             code: "TES0"
         }
     }
