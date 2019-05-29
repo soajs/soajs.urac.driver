@@ -248,6 +248,7 @@ let driver = {
 
                     let userTenant = checkUserTenantAccess(record, soajs.tenant);
                     if (!userTenant) {
+                        driver.model.closeConnection(soajs);
                         return cb(403);
                     }
                     if (userTenant && userTenant.groups && Array.isArray(userTenant.groups) && userTenant.groups.length !== 0) {
@@ -292,6 +293,7 @@ let driver = {
             driver.model.initConnection(soajs);
             let criteria = null;
             if (!(data.username || data.id)) {
+                driver.model.closeConnection(soajs);
                 return cb(411);
             }
             if (data.username) {
@@ -308,12 +310,14 @@ let driver = {
                     };
                 }
                 catch (e) {
+                    driver.model.closeConnection(soajs);
                     return cb(411);
                 }
             }
-            if (!criteria)
+            if (!criteria) {
+                driver.model.closeConnection(soajs);
                 return cb(403);
-
+            }
             utilities.findRecord(soajs, driver.model, criteria, cb, function (record) {
                 delete record.password;
 
