@@ -77,7 +77,7 @@ module.exports = function (grunt) {
 					"after": false,
 					"afterEach": false
 				},
-				ignores: ['test/coverage/**/*.js']
+				ignores: ['test/coverage/**', 'node_modules/**']
 			},
 			files: {
 				src: ['**/*.js']
@@ -86,28 +86,15 @@ module.exports = function (grunt) {
 				src: 'Gruntfile.js'
 			}
 		},
-		// jsdoc: {
-		//   doc : {
-		//     src: ['soajs/**/*.js'],
-		//     jsdoc: pluginsRootPath+'/node_modules/grunt-jsdoc/node_modules/jsdoc/jsdoc',
-		//     options: {
-		//       dest: 'doc',
-		//     }
-		//   }
-		// },
 		
 		env: {
 			mochaTest: {
-				// NODE_ENV: 'test',
-				// APP_DIR: process.cwd(),
 				APP_DIR_FOR_CODE_COVERAGE: '../',
 				SOAJS_ENV: 'dev',
 				SOAJS_SRVIP: '127.0.0.1',
 				SOAJS_PROFILE: ''
 			},
 			coverage: {
-				// NODE_ENV: 'test',
-				// APP_DIR: process.cwd(),
 				APP_DIR_FOR_CODE_COVERAGE: '../test/coverage/instrument/',
 				SOAJS_ENV: 'dev',
 				SOAJS_SRVIP: '127.0.0.1',
@@ -126,7 +113,7 @@ module.exports = function (grunt) {
 		},
 		
 		instrument: {
-			files: ['index.js', 'config.js', 'lib/*.js', 'lib/drivers/*.js', 'model/*.js'],
+			files: ['index.js', 'config.js', 'lib/*.js', 'lib/drivers/*.js', 'model/mongo/*.js'],
 			options: {
 				lazy: false,
 				basePath: 'test/coverage/instrument/'
@@ -188,7 +175,6 @@ module.exports = function (grunt) {
 	grunt.registerTask("unit", ['env:mochaTest', 'mochaTest:unit']);
 	grunt.registerTask("test", ['clean', 'env:coverage', 'instrument', 'mochaTest:unit', 'mochaTest:integration']);
 	grunt.registerTask("coverage", ['clean', 'env:coverage', 'instrument', 'mochaTest:unit', 'mochaTest:integration', 'storeCoverage', 'makeReport', 'coveralls']);
-	//grunt.registerTask("coverage", ['clean', 'env:coverage', 'instrument', 'mochaTest:unit', 'mochaTest:integration', 'storeCoverage', 'makeReport']);
 	
 };
 
