@@ -69,6 +69,7 @@ module.exports = function (grunt) {
                 "node": true,
                 "maxerr": 100,
                 "indent": 2,
+                "esversion": 6,
                 "globals": {
                     "describe": false,
                     "it": false,
