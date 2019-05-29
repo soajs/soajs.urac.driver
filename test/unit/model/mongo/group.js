@@ -46,7 +46,6 @@ describe("Unit test for: model - group", function () {
         }
     };
 
-
     describe("Constructor - with tenant", function () {
         let modelObj = null;
         before((done) => {
@@ -90,6 +89,7 @@ describe("Unit test for: model - group", function () {
         });
     });
 
+    /*
     describe("Constructor - with sub tenant", function () {
         soajs.tenant.main = {
             "code": "TES1",
@@ -144,6 +144,7 @@ describe("Unit test for: model - group", function () {
             done();
         });
 
-
     });
+
+    */
 });
