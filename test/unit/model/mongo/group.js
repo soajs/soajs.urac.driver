@@ -4,14 +4,14 @@ const coreModules = require("soajs.core.modules");
 const core = coreModules.core;
 const helper = require("../../../helper.js");
 const Model = helper.requireModule('./model/mongo/group.js');
-//const assert = require('assert');
+const assert = require('assert');
 
 describe("Unit test for: model - group", function () {
     let soajs = {
         "meta": core.meta,
         "tenant": {
             "code": "TES0",
-            "id": ""
+            "id": "5c0e74ba9acc3c5a84a51259"
         },
         "registry": {
             "tenantMetaDB": {
@@ -61,24 +61,30 @@ describe("Unit test for: model - group", function () {
 
         it("test - validateId", function (done) {
             modelObj.validateId({"id": "5c8d0c505653de3985aa0ffe"}, (error, id) => {
-                console.log(id);
+                assert.deepStrictEqualequal(id, "5c8d0c505653de3985aa0ffe");
                 done();
             });
         });
         it("test - getGroups - with no data", function (done) {
             modelObj.getGroups(null, (error, records) => {
-                console.log(records);
+                console.log(error);
                 done();
             })
         });
         it("test - getGroups - with data", function (done) {
             modelObj.getGroups({"groups": []}, (error, records) => {
-                console.log(records);
+                console.log(error);
                 done();
             })
         });
         it("test - getGroups - with data & tId", function (done) {
-            modelObj.getGroups({"groups": [], "tId": ""}, (error, records) => {
+            modelObj.getGroups({"groups": ["owner"], "tId": "5c0e74ba9acc3c5a84a51259"}, (error, records) => {
+                console.log(records);
+                done();
+            })
+        });
+        it("test - getGroups - with data & with wrong tId", function (done) {
+            modelObj.getGroups({"groups": ["owner"], "tId": "5c0e74ba9acc3c5a84a51258"}, (error, records) => {
                 console.log(records);
                 done();
             })
@@ -88,7 +94,7 @@ describe("Unit test for: model - group", function () {
     describe("Test - with sub tenant", function () {
         soajs.tenant.main = {
             "code": "TES1",
-            "id": ""
+            "id": "5c0e74ba9acc3c5a84a51259"
         };
         let modelObj = null;
         before((done) => {
@@ -105,7 +111,7 @@ describe("Unit test for: model - group", function () {
         delete soajs.tenant.main;
         soajs.tenant.roaming = {
             "code": "TES2",
-            "id": "",
+            "id": "5c0e74ba9acc3c5a84a51259",
             "tenantMetaDB": {
                 "urac": {
                     "prefix": "",
