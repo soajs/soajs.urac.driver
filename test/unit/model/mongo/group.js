@@ -46,68 +46,69 @@ describe("Unit test for: model - group", function () {
         }
     };
 
-    describe("Constructor - with tenant", function () {
-        let modelObj = null;
-        before((done) => {
-            modelObj = new Model(soajs);
-            done();
-        });
-        after((done) => {
-            modelObj.closeConnection();
-            done();
-        });
+    let modelObj = null;
 
-        it("test - validateId", function (done) {
-            modelObj.validateId({"id": "5c8d0c505653de3985aa0ffe"}, (error, id) => {
-                assert.equal(id, "5c8d0c505653de3985aa0ffe");
-                done();
-            });
-        });
-        it("test - getGroups - with no data", function (done) {
-            modelObj.getGroups(null, (error, records) => {
-                assert.ok(error);
-                done();
-            })
-        });
-        it("test - getGroups - with data", function (done) {
-            modelObj.getGroups({"groups": ["owner"]}, (error, records) => {
-                assert.equal(records[0].code, "owner");
-                done();
-            })
-        });
-        it("test - getGroups - with data & tId", function (done) {
-            modelObj.getGroups({"groups": ["owner", "devop"], "tId": "5c0e74ba9acc3c5a84a51259"}, (error, records) => {
-                assert.equal(records.length, 2);
-                done();
-            })
-        });
-        it("test - getGroups - with data & with wrong tId", function (done) {
-            modelObj.getGroups({"groups": ["owner"], "tId": "5c0e74ba9acc3c5a84a51258"}, (error, records) => {
-                assert.equal(records.length, 0);
-                done();
-            })
+    it("Constructor - with tenant - open connection", function (done) {
+        modelObj = new Model(soajs);
+        done();
+    });
+    it("test - validateId", function (done) {
+        modelObj.validateId({"id": "5c8d0c505653de3985aa0ffe"}, (error, id) => {
+            assert.equal(id, "5c8d0c505653de3985aa0ffe");
+            done();
         });
     });
+    it("test - getGroups - with no data", function (done) {
+        modelObj.getGroups(null, (error, records) => {
+            assert.ok(error);
+            done();
+        });
+    });
+    it("test - getGroups - with data", function (done) {
+        modelObj.getGroups({"groups": ["owner"]}, (error, records) => {
+            assert.equal(records[0].code, "owner");
+            done();
+        });
+    });
+    it("test - getGroups - with data & tId", function (done) {
+        modelObj.getGroups({"groups": ["owner", "devop"], "tId": "5c0e74ba9acc3c5a84a51259"}, (error, records) => {
+            assert.equal(records.length, 2);
+            done();
+        });
+    });
+    it("test - getGroups - with data & with wrong tId", function (done) {
+        modelObj.getGroups({"groups": ["owner"], "tId": "5c0e74ba9acc3c5a84a51258"}, (error, records) => {
+            assert.equal(records.length, 0);
+            done();
+        });
+    });
+    it("Constructor - with tenant - close connection", function (done) {
+        modelObj.closeConnection();
+        done();
+    });
 
-    /*
-    describe("Constructor - with sub tenant", function () {
+
+    it("Constructor - with sub tenant - open connection", function (done) {
         soajs.tenant.main = {
             "code": "TES1",
-            "id": "5c0e74ba9acc3c5a84a51259"
+            "id": "5c0e74ba9acc3c5a84a51250"
         };
-        let modelObj = null;
-        before((done) => {
-            modelObj = new Model(soajs);
+        modelObj = new Model(soajs);
+        done();
+    });
+    it("test - getGroups - with data & tId", function (done) {
+        modelObj.getGroups({"groups": ["owner"], "tId": "5c0e74ba9acc3c5a84a51251"}, (error, records) => {
+            assert.equal(records[0].tenant.code, 'TES1');
+            assert.equal(records.length, 1);
             done();
         });
-        after((done) => {
-            modelObj.closeConnection();
-            done();
-        });
-
+    });
+    it("Constructor - with sub tenant - close connection", function (done) {
+        modelObj.closeConnection();
+        done();
     });
 
-    describe("Constructor - with roaming", function () {
+    it("Constructor - with roaming - open connection", function (done) {
         delete soajs.tenant.main;
         soajs.tenant.roaming = {
             "code": "TES2",
@@ -134,17 +135,18 @@ describe("Unit test for: model - group", function () {
                 }
             }
         };
-        let modelObj = null;
-        before((done) => {
-            modelObj = new Model(soajs);
-            done();
-        });
-        after((done) => {
-            modelObj.closeConnection();
-            done();
-        });
-
+        modelObj = new Model(soajs);
+        done();
     });
-
-    */
+    it("test - getGroups - with data & tId", function (done) {
+        modelObj.getGroups({"groups": ["owner"], "tId": "5c0e74ba9acc3c5a84a51252"}, (error, records) => {
+            assert.equal(records[0].tenant.code, 'TES2');
+            assert.equal(records.length, 1);
+            done();
+        });
+    });
+    it("Constructor - with roaming - close connection", function (done) {
+        modelObj.closeConnection();
+        done();
+    });
 });
