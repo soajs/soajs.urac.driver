@@ -106,7 +106,7 @@ User.prototype.getSocialNetworkUser = function (data, cb) {
         $or: []
     };
     if (data.email) {
-        condition["$or"].push({'email': userRecord.email});
+        condition["$or"].push({'email': data.email});
     }
     let c = {};
     c['socialId.' + data.mode + '.id'] = data.id;

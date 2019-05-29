@@ -68,8 +68,8 @@ let driver = {
      * @param response
      * @param passport
      */
-    "passportLibInitAuth": function (req, response, passport) {
-        BL.passport.initAuth(req, response, passport);
+    "passportLibInitAuth": function (req, response, passport, cb) {
+        BL.passport.initAuth(req, response, passport, cb);
     },
 
     /**

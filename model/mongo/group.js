@@ -90,7 +90,7 @@ Group.prototype.getGroups = function (data, cb) {
  * To close all opened mongoDB connection
  *
  */
-User.prototype.closeConnection = function () {
+Group.prototype.closeConnection = function () {
     let __self = this;
 
     __self.mongoCore.closeDb();
