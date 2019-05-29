@@ -282,7 +282,7 @@ let driver = {
                     if (err) {
                         modelUserObj.closeConnection();
                         soajs.log.error(err);
-                        return cb({"code": 404, "msg": soajs.config.errors[404]})
+                        return cb({"code": 404, "msg": soajs.config.errors[404]});
                     }
                     data.id = _id;
                     resume();
@@ -489,10 +489,8 @@ let driver = {
 
                         let modelUserObj = new SSOT.user(soajs);
                         BL.user.save(soajs, {
-                            "user": {
-                                userRecord: user.other[0],
-                                attributesMap: openamAttributesMap
-                            }, "mode": "openam"
+                            "user": user.other[0],
+                            "mode": "ldap"
                         }, modelUserObj, (error, record) => {
                             modelUserObj.closeConnection();
                             return cb(error, record);
