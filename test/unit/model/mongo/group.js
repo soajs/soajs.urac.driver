@@ -77,7 +77,7 @@ describe("Unit test for: model - group", function () {
             })
         });
         it("test - getGroups - with data & tId", function (done) {
-            modelObj.getGroups({"groups": ["owner"], "tId": "5c0e74ba9acc3c5a84a51259"}, (error, records) => {
+            modelObj.getGroups({"groups": ["owner", "devop"], "tId": "5c0e74ba9acc3c5a84a51259"}, (error, records) => {
                 assert.equal(records.length, 2);
                 done();
             })
