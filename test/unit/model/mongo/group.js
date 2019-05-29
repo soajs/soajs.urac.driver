@@ -48,7 +48,6 @@ describe("Unit test for: model - group", function () {
 
 
     describe("Constructor - with tenant", function () {
-        let what2expect = {ip: '127.0.0.1', HATask: null, fetched: null};
         let modelObj = null;
         before((done) => {
             modelObj = new Model(soajs);
@@ -72,7 +71,7 @@ describe("Unit test for: model - group", function () {
             })
         });
         it("test - getGroups - with data", function (done) {
-            modelObj.getGroups({"groups": []}, (error, records) => {
+            modelObj.getGroups({"groups": ["owner"]}, (error, records) => {
                 console.log(error);
                 done();
             })
@@ -91,7 +90,7 @@ describe("Unit test for: model - group", function () {
         });
     });
 
-    describe("Test - with sub tenant", function () {
+    describe("Constructor - with sub tenant", function () {
         soajs.tenant.main = {
             "code": "TES1",
             "id": "5c0e74ba9acc3c5a84a51259"
@@ -107,7 +106,8 @@ describe("Unit test for: model - group", function () {
         });
 
     });
-    describe("test - with roaming", function () {
+
+    describe("Constructor - with roaming", function () {
         delete soajs.tenant.main;
         soajs.tenant.roaming = {
             "code": "TES2",
