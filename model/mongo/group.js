@@ -66,7 +66,7 @@ Group.prototype.validateId = function (data, cb) {
  */
 Group.prototype.getGroups = function (data, cb) {
     let __self = this;
-    if (!data || !data.groups) {
+    if (!data || !data.groups || data.groups.length < 1) {
         let error = new Error("an array of groups is required.");
         return cb(error, null);
     }

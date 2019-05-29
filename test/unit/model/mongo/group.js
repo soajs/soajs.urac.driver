@@ -61,7 +61,7 @@ describe("Unit test for: model - group", function () {
 
         it("test - validateId", function (done) {
             modelObj.validateId({"id": "5c8d0c505653de3985aa0ffe"}, (error, id) => {
-                assert.deepStrictEqualequal(id, "5c8d0c505653de3985aa0ffe");
+                assert.equal(id, "5c8d0c505653de3985aa0ffe");
                 done();
             });
         });
