@@ -22,6 +22,7 @@ describe("Starting URAC driver Unit test", () => {
     after((done) => {
 
         require("./model/mongo/group.js");
+        require("./model/mongo/user.js");
 
         done();
     });

@@ -22,10 +22,13 @@ function Group(soajs, mongoCore) {
             if (soajs.tenant.roaming.tenantMetaDB) {
                 tenantMetaDB = soajs.tenant.roaming.tenantMetaDB;
             }
-        } else if (soajs.tenant.main && soajs.tenant.main.code) {
+        }
+        /*
+        else if (soajs.tenant.main && soajs.tenant.main.code) {
             tCode = soajs.tenant.main.code;
             tId = soajs.tenant.main.id;
         }
+        */
         __self.mongoCore = new Mongo(soajs.meta.tenantDB(tenantMetaDB, "urac", tCode));
         if (indexing && tId && !indexing[tId]) {
             indexing[tId] = true;

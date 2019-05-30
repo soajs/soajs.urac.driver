@@ -3,10 +3,10 @@
 const coreModules = require("soajs.core.modules");
 const core = coreModules.core;
 const helper = require("../../../helper.js");
-const Model = helper.requireModule('./model/mongo/group.js');
+const Model = helper.requireModule('./model/mongo/user.js');
 const assert = require('assert');
 
-describe("Unit test for: model - group", function () {
+describe("Unit test for: model - user", function () {
     let soajs = {
         "meta": core.meta,
         "tenant": {
@@ -58,27 +58,93 @@ describe("Unit test for: model - group", function () {
             done();
         });
     });
-    it("test - getGroups - with no data", function (done) {
-        modelObj.getGroups(null, (error, records) => {
+    it("test - lastLogin", function (done) {
+        modelObj.lastLogin({"username": "owner", "lastLogin": new Date().getTime()}, (error, record) => {
+            assert.equal(record, 1);
+            done();
+        });
+    });
+    it("test - lastLogin - error", function (done) {
+        modelObj.lastLogin({}, (error, record) => {
             assert.ok(error);
             done();
         });
     });
-    it("test - getGroups - with data", function (done) {
-        modelObj.getGroups({"groups": ["owner"]}, (error, records) => {
-            assert.equal(records[0].code, "owner");
+
+    it("test - saveSocialNetworkUser", function (done) {
+        modelObj.saveSocialNetworkUser({
+            "username": "social",
+            "email": "me@social.com",
+            "socialId": {"facebook": {"id": 123456}}
+        }, (error, record) => {
             done();
         });
     });
-    it("test - getGroups - with data & tId", function (done) {
-        modelObj.getGroups({"groups": ["owner", "devop"], "tId": "5c0e74ba9acc3c5a84a51259"}, (error, records) => {
-            assert.equal(records.length, 2);
+    it("test - saveSocialNetworkUser - error", function (done) {
+        modelObj.saveSocialNetworkUser({"username": "owner"}, (error, record) => {
+            assert.ok(error);
             done();
         });
     });
-    it("test - getGroups - with data & with wrong tId", function (done) {
-        modelObj.getGroups({"groups": ["owner"], "tId": "5c0e74ba9acc3c5a84a51258"}, (error, records) => {
-            assert.equal(records.length, 0);
+    it("test - getSocialNetworkUser", function (done) {
+        modelObj.getSocialNetworkUser({
+            "mode": "facebook",
+            "id": 123456
+        }, (error, record) => {
+            assert.equal(record.username, "social");
+            done();
+        });
+    });
+    it("test - getSocialNetworkUser - email", function (done) {
+        modelObj.getSocialNetworkUser({
+            "mode": "facebook",
+            "id": 123456,
+            "email": "me@social.com"
+        }, (error, record) => {
+            assert.equal(record.username, "social");
+            done();
+        });
+    });
+    it("test - getSocialNetworkUser - error", function (done) {
+        modelObj.getSocialNetworkUser({"username": "owner"}, (error, record) => {
+            assert.ok(error);
+            done();
+        });
+    });
+
+    it("test - getUserByEmail", function (done) {
+        modelObj.getUserByEmail({"email": "me@localhost.com"}, (error, record) => {
+            assert.equal(record.username, "owner");
+            done();
+        });
+    });
+    it("test - getUserByEmail - error", function (done) {
+        modelObj.getUserByEmail({}, (error, record) => {
+            assert.ok(error);
+            done();
+        });
+    });
+    it("test - getUserByUsernameOrId", function (done) {
+        modelObj.getUserByUsernameOrId({"username": "owner"}, (error, record) => {
+            assert.equal(record.username, "owner");
+            done();
+        });
+    });
+    it("test - getUserByUsernameOrId - error", function (done) {
+        modelObj.getUserByUsernameOrId({}, (error, record) => {
+            assert.ok(error);
+            done();
+        });
+    });
+    it("test - getUserByPin", function (done) {
+        modelObj.getUserByPin({"pin": "1235"}, (error, record) => {
+            assert.equal(record.username, "owner");
+            done();
+        });
+    });
+    it("test - getUserByPin - error", function (done) {
+        modelObj.getUserByPin({}, (error, record) => {
+            assert.ok(error);
             done();
         });
     });
@@ -87,7 +153,7 @@ describe("Unit test for: model - group", function () {
         done();
     });
 
-/*
+
     it("Constructor - with sub tenant - open connection", function (done) {
         soajs.tenant.main = {
             "code": "TES1",
@@ -96,18 +162,11 @@ describe("Unit test for: model - group", function () {
         modelObj = new Model(soajs);
         done();
     });
-    it("test - getGroups - with data & tId", function (done) {
-        modelObj.getGroups({"groups": ["owner"], "tId": "5c0e74ba9acc3c5a84a51251"}, (error, records) => {
-            assert.equal(records[0].tenant.code, 'TES1');
-            assert.equal(records.length, 1);
-            done();
-        });
-    });
+
     it("Constructor - with sub tenant - close connection", function (done) {
         modelObj.closeConnection();
         done();
     });
-*/
 
     it("Constructor - with roaming - open connection", function (done) {
         delete soajs.tenant.main;
@@ -139,13 +198,7 @@ describe("Unit test for: model - group", function () {
         modelObj = new Model(soajs);
         done();
     });
-    it("test - getGroups - with data & tId", function (done) {
-        modelObj.getGroups({"groups": ["owner"], "tId": "5c0e74ba9acc3c5a84a51252"}, (error, records) => {
-            assert.equal(records[0].tenant.code, 'TES2');
-            assert.equal(records.length, 1);
-            done();
-        });
-    });
+
     it("Constructor - with roaming - close connection", function (done) {
         modelObj.closeConnection();
         done();

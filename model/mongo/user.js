@@ -111,20 +111,27 @@ User.prototype.lastLogin = function (data, cb) {
  */
 User.prototype.getSocialNetworkUser = function (data, cb) {
     let __self = this;
-    if (!!data || (data.id && !data.mode)) {
+    if (!data || (!data.id && !data.mode)) {
         let error = new Error("id and mode are required.");
         return cb(error, null);
     }
-    let condition = {
-        $or: []
-    };
+    let e = null;
     if (data.email) {
-        condition["$or"].push({'email': data.email});
+        e = {};
+        e['email'] = data.email;
     }
     let c = {};
     c['socialId.' + data.mode + '.id'] = data.id;
-    condition["$or"].push(c);
 
+    let condition = {};
+    if (c && e) {
+        condition = {
+            $or: [c, e]
+        }
+    }
+    else {
+        condition = c;
+    }
     __self.mongoCore.findOne(colName, condition, null, null, (err, record) => {
         return cb(err, record);
     });
@@ -137,13 +144,15 @@ User.prototype.getSocialNetworkUser = function (data, cb) {
  * @param data
  *  should have:
  *      required (record)
+ *      if _id is in the record then it is going to be save
+ *      if _id is not in the record then it is going to insert
  *
  * @param cb
  */
 User.prototype.saveSocialNetworkUser = function (data, cb) {
     let __self = this;
-    if (!data) {
-        let error = new Error("user record is required.");
+    if (!data || !data.socialId) {
+        let error = new Error("user record with socialId is required.");
         return cb(error, null);
     }
 
@@ -161,6 +170,7 @@ User.prototype.saveSocialNetworkUser = function (data, cb) {
  *
  * @param cb
  */
+/*
 User.prototype.insertSocialNetworkUser = function (data, cb) {
     let __self = this;
     if (!data) {
@@ -172,7 +182,7 @@ User.prototype.insertSocialNetworkUser = function (data, cb) {
         return cb(err, record);
     });
 };
-
+*/
 /**
  * To get a user by username and status
  *
