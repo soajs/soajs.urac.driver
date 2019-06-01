@@ -127,7 +127,7 @@ User.prototype.getSocialNetworkUser = function (data, cb) {
     if (c && e) {
         condition = {
             $or: [c, e]
-        }
+        };
     }
     else {
         condition = c;

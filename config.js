@@ -16,8 +16,6 @@ module.exports = {
         420: "Missing serviceConfig for urac.passportLogin",
         601: "Model not found",
 
-        720: "Unable to authenticated with passport",
-
         700: "Unable to log in. Ldap connection refused!",
         701: "Unable to log in. Invalid ldap admin user.",
         702: "Unable to log in. Invalid ldap admin credentials.",
@@ -25,6 +23,8 @@ module.exports = {
         704: "Unable to log in. Ldap user not found.",
         705: "Unable to log in. Authentication failed.",
         706: "Unable to log in. Missing serviceConfig for urac.ldapServer",
+
+        720: "Unable to authenticated with passport",
 
         710: "Unable to log in. OpenAM connection error.",
         711: "Unable to log in. OpenAM token invalid.",

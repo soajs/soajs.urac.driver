@@ -5,9 +5,11 @@ const assert = require('assert');
 let sampleData = require("../data/index");
 
 describe("Starting URAC driver Unit test", () => {
-    it("Init unit test", (done) => {
+
+    before((done) => {
         done();
     });
+
     it("Unit Test - import data", (done) => {
         shell.pushd(sampleData.dir);
         shell.exec("chmod +x " + sampleData.shell, (code) => {
@@ -19,11 +21,19 @@ describe("Starting URAC driver Unit test", () => {
             });
         });
     });
-    after((done) => {
+    it ("Testing all models", (done) => {
 
         require("./model/mongo/group.js");
         require("./model/mongo/user.js");
+        done();
+    });
+    it ("Testing all BL", (done) => {
 
+        require("./lib/user.js");
+        done();
+    });
+
+    after((done) => {
         done();
     });
 });
