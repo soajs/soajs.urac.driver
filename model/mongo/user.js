@@ -37,15 +37,16 @@ function User(soajs, mongoCore) {
                 {
                     'config.allowedTenants.tenant.pin.code': 1,
                     'config.allowedTenants.tenant.id': 1
-                }, {unique: true}, function () {
+                }, {unique: true, sparse: true}, function () {
                 });
             __self.mongoCore.createIndex(colName,
                 {
                     'tenant.pin.code': 1,
                     'tenant.id': 1
-                }, {unique: true}, function () {
+                }, {unique: true, sparse: true}, function () {
                 });
 
+            //TODO: missing index for socialId.facebook.id
 
             soajs.log.debug("Indexes @ " + colName + " for " + tId + " Updated!");
         }

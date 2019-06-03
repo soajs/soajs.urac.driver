@@ -77,6 +77,7 @@ describe("Unit test for: model - user", function () {
             "email": "me@social.com",
             "socialId": {"facebook": {"id": 123456}}
         }, (error, record) => {
+            assert.ok(record);
             done();
         });
     });
