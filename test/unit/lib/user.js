@@ -100,7 +100,7 @@ describe("Unit test for: lib - user", function () {
             "profile": {
                 "_json":
                     {
-                        "first_name": "antoine",
+                        "first_name": "tony",
                         "last_name": "hage",
                         "email": "antoine@soajs.org"
                     },

@@ -33,6 +33,17 @@ describe("Starting URAC driver Unit test", () => {
         done();
     });
 
+    it ("Testing all drivers", (done) => {
+
+        require("./lib/drivers/facebook.js");
+        require("./lib/drivers/github.js");
+        require("./lib/drivers/google.js");
+        require("./lib/drivers/ldap.js");
+        require("./lib/drivers/openam.js");
+        require("./lib/drivers/twitter.js");
+        done();
+    });
+
     after((done) => {
         done();
     });
