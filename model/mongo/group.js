@@ -34,7 +34,7 @@ function Group(soajs, mongoCore) {
             indexing[tId] = true;
             __self.mongoCore.createIndex(colName, {"code": 1, "tenant.id": 1}, {unique: true}, () =>{
             });
-            soajs.log.debug("Indexes @ " + colName + " for " + tId + " Updated!");
+            soajs.log.debug("Indexes @ " + colName + " for " + tCode + "_urac Updated!");
         }
     }
 }

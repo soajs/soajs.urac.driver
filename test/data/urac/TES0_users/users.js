@@ -13,8 +13,6 @@ let records = [
             "owner"
         ],
         config: {
-            packages: {},
-            keys: {},
             allowedTenants: [
                 {
                     tenant: {

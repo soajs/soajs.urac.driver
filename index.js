@@ -29,8 +29,6 @@ function initBLModel(soajs, cb) {
     let modelName = driverConfig.model;
     if (soajs.servicesConfig && soajs.servicesConfig.urac && soajs.servicesConfig.urac.model)
         modelName = soajs.servicesConfig.urac.model;
-    if (process.env.SOAJS_TEST && soajs.inputmaskData && soajs.inputmaskData.model)
-        modelName = soajs.inputmaskData.model;
     let userModel = __dirname + "/model/" + modelName + "/user.js";
     if (fs.existsSync(userModel))
         SSOT.user = require(userModel);
@@ -120,9 +118,10 @@ let driver = {
      */
     "loginByPin": function (soajs, input, cb) {
         initBLModel(soajs, function (error) {
-            if (error) {
+            if (error)
                 return cb(error);
-            }
+            if (!input || !input.pin)
+                return cb({"code": 403, "msg": soajs.config.errors[403]});
             let modelUserObj = new SSOT.user(soajs);
             BL.user.find(soajs, {"pin": input.pin}, modelUserObj, (error, record) => {
                 if (error) {
@@ -185,12 +184,13 @@ let driver = {
      */
     "login": function (soajs, input, cb) {
         initBLModel(soajs, function (error) {
-            if (error) {
+            if (error)
                 return cb(error);
-            }
             let modelUserObj = new SSOT.user(soajs);
             let data = {};
             let pattern = soajsValidator.SchemaPatterns.email;
+            if (!input || !input.username)
+                return cb({"code": 403, "msg": soajs.config.errors[403]});
             if (pattern.test(input.username))
                 data.email = input.username;
             else

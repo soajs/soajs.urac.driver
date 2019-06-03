@@ -27,9 +27,13 @@ describe("Starting URAC driver Unit test", () => {
         require("./model/mongo/user.js");
         done();
     });
+
     it ("Testing all BL", (done) => {
 
+        require("./lib/passport.js");
+        require("./lib/common.js");
         require("./lib/user.js");
+        require("./lib/group.js");
         done();
     });
 
@@ -41,6 +45,12 @@ describe("Starting URAC driver Unit test", () => {
         require("./lib/drivers/ldap.js");
         require("./lib/drivers/openam.js");
         require("./lib/drivers/twitter.js");
+        done();
+    });
+
+    it ("Testing urac", (done) => {
+
+        require("./urac.driver.js");
         done();
     });
 

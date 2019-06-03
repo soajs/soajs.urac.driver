@@ -48,7 +48,7 @@ function User(soajs, mongoCore) {
 
             //TODO: missing index for socialId.facebook.id
 
-            soajs.log.debug("Indexes @ " + colName + " for " + tId + " Updated!");
+            soajs.log.debug("Indexes @ " + colName + " for " + tCode + "_urac Updated!");
         }
     }
 }
