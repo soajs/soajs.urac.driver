@@ -245,11 +245,11 @@ describe("Unit test for: urac.driver", function () {
             "token": "123456"
         };
         let mockedReply = {
-            attributes : [
-                { name: 'sAMAccountName', values: [ 'etienz' ] },
-                { name: 'mail', values: [ 'mail@mail.com' ] },
-                { name: 'givenname', values: [ 'antoine' ] },
-                { name: 'sn', values: [ 'hage' ] }
+            attributes: [
+                {name: 'sAMAccountName', values: ['etienz']},
+                {name: 'mail', values: ['mail@mail.com']},
+                {name: 'givenname', values: ['antoine']},
+                {name: 'sn', values: ['hage']}
             ]
         };
         nock('https://test.com')
@@ -262,4 +262,12 @@ describe("Unit test for: urac.driver", function () {
             done();
         });
     });
+
+    it("test - ldapLogin - error config", function (done) {
+        driver.ldapLogin(soajs, {}, (error) => {
+            assert.equal(error.code, "706");
+            done();
+        });
+    });
+
 });
