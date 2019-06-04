@@ -42,7 +42,7 @@ function initBLModel(soajs, cb) {
     }
     else {
         soajs.log.error('Requested model not found. make sure you have a model for user and another one for group!');
-        return cb({"code": 601, "msg": soajs.config.errors[601]});
+        return cb({"code": 601, "msg": driverConfig.errors[601]});
     }
 }
 
@@ -86,10 +86,10 @@ let driver = {
                 passport.authenticate(authentication, {session: false}, function (err, user) {
                     if (err) {
                         req.soajs.log.error(err);
-                        return cb({"code": 720, "msg": req.soajs.config.errors[720]});
+                        return cb({"code": 720, "msg": driverConfig.errors[720]});
                     }
                     if (!user) {
-                        cb({"code": 403, "msg": req.soajs.config.errors[403]});
+                        cb({"code": 403, "msg": driverConfig.errors[403]});
                     }
 
                     req.soajs.inputmaskData.user = user;
@@ -121,7 +121,7 @@ let driver = {
             if (error)
                 return cb(error);
             if (!input || !input.pin)
-                return cb({"code": 403, "msg": soajs.config.errors[403]});
+                return cb({"code": 403, "msg": driverConfig.errors[403]});
             let modelUserObj = new SSOT.user(soajs);
             BL.user.find(soajs, {"pin": input.pin}, modelUserObj, (error, record) => {
                 if (error) {
@@ -130,14 +130,14 @@ let driver = {
                 }
                 if (!record) {
                     modelUserObj.closeConnection();
-                    return cb({"code": 403, "msg": soajs.config.errors[403]});
+                    return cb({"code": 403, "msg": driverConfig.errors[403]});
                 }
                 delete record.password;
                 delete record.socialId;
                 let userTenant = BL.common.checkUserTenantAccess(record, soajs.tenant);
                 if (!userTenant) {
                     modelUserObj.closeConnection();
-                    return cb({"code": 403, "msg": soajs.config.errors[403]});
+                    return cb({"code": 403, "msg": driverConfig.errors[403]});
                 }
                 if (userTenant.groups && Array.isArray(userTenant.groups) && userTenant.groups.length !== 0) {
                     record.groups = userTenant.groups;
@@ -190,7 +190,7 @@ let driver = {
             let data = {};
             let pattern = soajsValidator.SchemaPatterns.email;
             if (!input || !input.username)
-                return cb({"code": 403, "msg": soajs.config.errors[403]});
+                return cb({"code": 403, "msg": driverConfig.errors[403]});
             if (pattern.test(input.username))
                 data.email = input.username;
             else
@@ -202,7 +202,7 @@ let driver = {
                 }
                 if (!record) {
                     modelUserObj.closeConnection();
-                    return cb({"code": 403, "msg": soajs.config.errors[403]});
+                    return cb({"code": 403, "msg": driverConfig.errors[403]});
                 }
                 let myConfig = driverConfig;
                 if (soajs.config)
@@ -211,14 +211,14 @@ let driver = {
                     if (err || !response) {
                         soajs.log.error(err);
                         modelUserObj.closeConnection();
-                        return cb({"code": 402, "msg": soajs.config.errors[402]});
+                        return cb({"code": 402, "msg": driverConfig.errors[402]});
                     }
                     delete record.password;
                     delete record.socialId;
                     let userTenant = BL.common.checkUserTenantAccess(record, soajs.tenant);
                     if (!userTenant) {
                         modelUserObj.closeConnection();
-                        return cb({"code": 403, "msg": soajs.config.errors[403]});
+                        return cb({"code": 403, "msg": driverConfig.errors[403]});
                     }
                     if (userTenant.groups && Array.isArray(userTenant.groups) && userTenant.groups.length !== 0) {
                         record.groups = userTenant.groups;
@@ -282,7 +282,7 @@ let driver = {
                     if (err) {
                         modelUserObj.closeConnection();
                         soajs.log.error(err);
-                        return cb({"code": 404, "msg": soajs.config.errors[404]});
+                        return cb({"code": 404, "msg": driverConfig.errors[404]});
                     }
                     data.id = _id;
                     resume();
@@ -300,13 +300,13 @@ let driver = {
                     }
                     if (!record) {
                         modelUserObj.closeConnection();
-                        return cb({"code": 403, "msg": soajs.config.errors[403]});
+                        return cb({"code": 403, "msg": driverConfig.errors[403]});
                     }
                     delete record.password;
                     let userTenant = BL.common.checkUserTenantAccess(record, soajs.tenant);
                     if (!userTenant) {
                         modelUserObj.closeConnection();
-                        return cb({"code": 403, "msg": soajs.config.errors[403]});
+                        return cb({"code": 403, "msg": driverConfig.errors[403]});
                     }
                     if (userTenant.groups && Array.isArray(userTenant.groups) && userTenant.groups.length !== 0) {
                         record.groups = userTenant.groups;
@@ -367,7 +367,7 @@ let driver = {
             openam = soajs.servicesConfig.urac.openam;
         }
         else {
-            return cb({"code": 712, "msg": soajs.config.errors[712]});
+            return cb({"code": 712, "msg": driverConfig.errors[712]});
         }
 
         let openamAttributesURL = openam.attributesURL;
@@ -382,19 +382,19 @@ let driver = {
 
             if (error) {
                 soajs.log.error(error);
-                return cb({"code": 710, "msg": soajs.config.errors[710]});
+                return cb({"code": 710, "msg": driverConfig.errors[710]});
             }
 
             if (!response || response.statusCode !== 200) {
                 soajs.log.error("OpenAM token invalid!");
-                return cb({"code": 711, "msg": soajs.config.errors[711]});
+                return cb({"code": 711, "msg": driverConfig.errors[711]});
             }
 
             try {
                 userRecord = JSON.parse(body);
             } catch (err) {
                 soajs.log.error("OpenAM response invalid!");
-                return cb({"code": 713, "msg": soajs.config.errors[713]});
+                return cb({"code": 713, "msg": driverConfig.errors[713]});
             }
 
             soajs.log.debug('Authenticated!');
@@ -429,7 +429,7 @@ let driver = {
             ldapServer = soajs.servicesConfig.urac.ldapServer;
         }
         else {
-            return cb({"code": 706, "msg": soajs.config.errors[706]});
+            return cb({"code": 706, "msg": driverConfig.errors[706]});
         }
         let host = ldapServer.host;
         let port = ldapServer.port;
@@ -453,27 +453,27 @@ let driver = {
                 soajs.log.error(err);
                 if (err.code && err.code === 'ECONNREFUSED') {
                     soajs.log.error("Connection Refused!");
-                    return cb({"code": 700, "msg": soajs.config.errors[700]});
+                    return cb({"code": 700, "msg": driverConfig.errors[700]});
                 }
                 if (err.lde_message) {
                     if (err.lde_message.includes('Incorrect DN given')) { // invalid admin username
                         soajs.log.error("Incorrect DN given!");
-                        return cb({"code": 701, "msg": soajs.config.errors[701]});
+                        return cb({"code": 701, "msg": driverConfig.errors[701]});
                     }
 
                     if (err.lde_message.includes('INVALID_CREDENTIALS') && err.lde_message.includes(adminUser)) { // invalid admin credentials (wrong admin password)
                         soajs.log.error("Invalid Admin Credentials");
-                        return cb({"code": 702, "msg": soajs.config.errors[702]});
+                        return cb({"code": 702, "msg": driverConfig.errors[702]});
                     }
 
                     if (err.lde_message.includes('INVALID_CREDENTIALS') && err.lde_message.includes(filter)) { // invalid user credentials (wrong user password)
                         soajs.log.error("Invalid User Credentials");
-                        let obj = {"code": 703, "msg": soajs.config.errors[703]};
+                        let obj = {"code": 703, "msg": driverConfig.errors[703]};
                         return cb(obj);
                     }
                 }
 
-                return cb({"code": 704, "msg": soajs.config.errors[704]});
+                return cb({"code": 704, "msg": driverConfig.errors[704]});
             }
 
             if (auth) {
@@ -502,7 +502,7 @@ let driver = {
             }
             else {
                 soajs.log.error("Authentication failed.");
-                return cb({"code": 705, "msg": soajs.config.errors[705]});
+                return cb({"code": 705, "msg": driverConfig.errors[705]});
             }
         });
     }
