@@ -150,6 +150,7 @@ User.prototype.getSocialNetworkUser = function (data, cb) {
  *
  * @param cb
  */
+/*
 User.prototype.saveSocialNetworkUser = function (data, cb) {
     let __self = this;
     if (!data || !data.socialId) {
@@ -158,6 +159,29 @@ User.prototype.saveSocialNetworkUser = function (data, cb) {
     }
 
     __self.mongoCore.save(colName, data, (err, record) => {
+        return cb(err, record);
+    });
+};
+*/
+/**
+ * To update a record of a user logged in via social network driver
+ *
+ * @param data
+ *  should have:
+ *      required (record)
+ *
+ * @param cb
+ */
+
+User.prototype.updateSocialNetworkUser = function (data, cb) {
+    let __self = this;
+    if (!data || !data.socialId || !data._id) {
+        let error = new Error("user record and _id are required.");
+        return cb(error, null);
+    }
+
+    let condition = {'_id': data._id};
+    __self.mongoCore.update(colName, condition, data, {}, (err, record) => {
         return cb(err, record);
     });
 };
@@ -171,10 +195,10 @@ User.prototype.saveSocialNetworkUser = function (data, cb) {
  *
  * @param cb
  */
-/*
+
 User.prototype.insertSocialNetworkUser = function (data, cb) {
     let __self = this;
-    if (!data) {
+    if (!data || !data.socialId) {
         let error = new Error("user record is required.");
         return cb(error, null);
     }
@@ -183,7 +207,7 @@ User.prototype.insertSocialNetworkUser = function (data, cb) {
         return cb(err, record);
     });
 };
-*/
+
 /**
  * To get a user by username and status
  *

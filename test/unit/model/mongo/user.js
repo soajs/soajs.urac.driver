@@ -45,7 +45,7 @@ describe("Unit test for: model - user", function () {
             }
         }
     };
-
+    let socialRecord = null;
     let modelObj = null;
 
     it("Constructor - with tenant - open connection", function (done) {
@@ -71,9 +71,10 @@ describe("Unit test for: model - user", function () {
         });
     });
 
-    it("test - saveSocialNetworkUser", function (done) {
-        modelObj.saveSocialNetworkUser({
+    it("test - insertSocialNetworkUser", function (done) {
+        modelObj.insertSocialNetworkUser({
             "username": "social",
+            "firstName": "mathieu",
             "email": "me@social.com",
             "socialId": {"facebook": {"id": 123456}}
         }, (error, record) => {
@@ -81,8 +82,8 @@ describe("Unit test for: model - user", function () {
             done();
         });
     });
-    it("test - saveSocialNetworkUser - error", function (done) {
-        modelObj.saveSocialNetworkUser({"username": "owner"}, (error, record) => {
+    it("test - insertSocialNetworkUser - error", function (done) {
+        modelObj.insertSocialNetworkUser({"username": "owner"}, (error, record) => {
             assert.ok(error);
             done();
         });
@@ -92,7 +93,15 @@ describe("Unit test for: model - user", function () {
             "mode": "facebook",
             "id": 123456
         }, (error, record) => {
+            socialRecord = record;
             assert.equal(record.username, "social");
+            done();
+        });
+    });
+    it("test - updateSocialNetworkUser", function (done) {
+        socialRecord.firstName = "mateo";
+        modelObj.updateSocialNetworkUser(socialRecord, (error, record) => {
+            assert.ok(record);
             done();
         });
     });
