@@ -121,6 +121,16 @@ describe("Unit test for: urac.driver", function () {
             done();
         });
     });
+    it("test - login - wrong user", function (done) {
+        let input = {
+            "username": "owner1",
+            "password": "password"
+        };
+        driver.login(soajs, input, (error, record) => {
+            assert.equal(error.code, "403");
+            done();
+        });
+    });
 
     it("test - getRecord - username", function (done) {
         let input = {
