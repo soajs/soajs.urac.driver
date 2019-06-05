@@ -9,7 +9,7 @@ describe("starting integration tests", () => {
 
     it("loading tests", (done) => {
 
-
+        require("./urac.driver.js");
         done();
     });
 });

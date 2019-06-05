@@ -80,7 +80,7 @@ module.exports = function (grunt) {
                 }
             },
             files: {
-                src: ['index.js', 'config.js', 'lib/*.js', 'lib/drivers/*.js', 'model/mongo/*.js', 'test/helper.js', 'test/unit/**/*.js']
+                src: ['index.js', 'config.js', 'lib/*.js', 'lib/drivers/*.js', 'model/mongo/*.js', 'test/helper.js', 'test/unit/**/*.js', 'test/integration/**/*.js']
             },
             gruntfile: {
                 src: 'Gruntfile.js'
@@ -89,17 +89,10 @@ module.exports = function (grunt) {
 
         env: {
             mochaTest: {
-                APP_DIR_FOR_CODE_COVERAGE: '../',
-                SOAJS_ENV: 'dev',
-                SOAJS_SRVIP: '127.0.0.1',
-                SOAJS_PROFILE: ''
+                APP_DIR_FOR_CODE_COVERAGE: '../'
             },
             coverage: {
-                APP_DIR_FOR_CODE_COVERAGE: '../test/coverage/instrument/',
-                SOAJS_ENV: 'dev',
-                SOAJS_SRVIP: '127.0.0.1',
-                SOAJS_TEST: true,
-                SOAJS_PROFILE: ''
+                APP_DIR_FOR_CODE_COVERAGE: '../test/coverage/instrument/'
             }
         },
 
@@ -148,7 +141,7 @@ module.exports = function (grunt) {
                     reporter: 'spec',
                     timeout: 90000
                 },
-                src: ['test/integration/_server.test.js']
+                src: ['test/integration/index.js']
             }
         },
 
