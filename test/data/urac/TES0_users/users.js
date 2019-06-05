@@ -16,10 +16,23 @@ let records = [
             allowedTenants: [
                 {
                     tenant: {
+                        id: "5c0e74ba9acc3c5a84a51251",
+                        code: "TES1",
+                        pin: {
+                            code: "5678",
+                            allowed: true
+                        }
+                    },
+                    groups: [
+                        "sub"
+                    ]
+                },
+                {
+                    tenant: {
                         id: "THYME_tID",
                         code: "THYME_CODE",
                         pin: {
-                            code: "5678",
+                            code: "5677",
                             allowed: true
                         }
                     },

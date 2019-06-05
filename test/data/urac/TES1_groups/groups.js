@@ -1,14 +1,14 @@
 let records = [
     {
         locked: true,
-        code: "owner",
-        name: "Owner Group",
+        code: "sub",
+        name: "sub Group TES1",
         owner: true,
         description: "this is the owner group",
         config: {
             allowedPackages: {
                 DSBRD: [
-                    "DSBRD_OWNER"
+                    "DSBRD_SUB"
                 ]
             }
         },

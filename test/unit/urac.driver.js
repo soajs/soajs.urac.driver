@@ -84,11 +84,35 @@ describe("Unit test for: urac.driver", function () {
         soajs.tenant.id = "5c0e74ba9acc3c5a84a51259";
         driver.loginByPin(soajs, input, (error, record) => {
             assert.equal(record.email, 'me@localhost.com');
+            assert.ok(record.groupsConfig);
+            done();
+        });
+    });
+    it("test - loginByPin - sub tenant", function (done) {
+        let input = {
+            "pin": "5678"
+        };
+        soajs.tenant = {
+            id: "5c0e74ba9acc3c5a84a51251",
+            code: "TES1",
+            main: {
+                "code": "TES0",
+                "id": "5c0e74ba9acc3c5a84a51259"
+            }
+        };
+        driver.loginByPin(soajs, input, (error, record) => {
+            assert.equal(record.email, 'me@localhost.com');
+            assert.deepStrictEqual(record.groups, [ 'sub' ]);
+            assert.ok(record.groupsConfig);
             done();
         });
     });
 
     it.skip("test - login - error model", function (done) {
+        soajs.tenant = {
+            "code": "TES0",
+            "id": "5c0e74ba9acc3c5a84a51259"
+        };
         soajs.servicesConfig.urac.model = "oracle";
         driver.modelInit = false;
         driver.login(soajs, {}, (error) => {
