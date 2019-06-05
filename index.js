@@ -1,193 +1,160 @@
 "use strict";
-const coreModule = require("soajs.core.modules");
-const soajsValidator = coreModule.core.validator;
 
-const driverConfig = require('./config.js');
 const fs = require("fs");
-//const merge = require('merge');
 const ActiveDirectory = require('activedirectory');
-
-const passportLib = require('./lib/passport.js');
-
 const request = require('request');
 
+const coreModule = require("soajs.core.modules");
+const soajsValidator = coreModule.core.validator;
+const driverConfig = require('./config.js');
+
+let BL = {
+    user: require("./lib/user.js"),
+    group: require("./lib/group.js"),
+    common: require('./lib/common.js'),
+    passport: require('./lib/passport.js')
+};
+let SSOT = {};
+
 /**
- * Initialize the Business Logic model and set it on driver
+ * Initialize the Business Logic model for user and group
+ *
+ * @param soajs
+ * @param cb
+ * @returns {*}
  */
 function initBLModel(soajs, cb) {
+    if (driver.modelInit)
+        return cb(null);
     let modelName = driverConfig.model;
-    if (soajs.servicesConfig && soajs.servicesConfig.model) {
-        modelName = soajs.servicesConfig.model;
+    if (soajs.servicesConfig && soajs.servicesConfig.urac && soajs.servicesConfig.urac.model)
+        modelName = soajs.servicesConfig.urac.model;
+    let userModel = __dirname + "/model/" + modelName + "/user.js";
+    if (fs.existsSync(userModel))
+        SSOT.user = require(userModel);
+    let groupModel = __dirname + "/model/" + modelName + "/group.js";
+    if (fs.existsSync(groupModel))
+        SSOT.group = require(groupModel);
+
+    if (SSOT.user && SSOT.group) {
+        driver.modelInit = true;
+        return cb(null);
     }
-    if (process.env.SOAJS_TEST && soajs.inputmaskData && soajs.inputmaskData.model) {
-        modelName = soajs.inputmaskData.model;
+    else {
+        soajs.log.error('Requested model not found. make sure you have a model for user and another one for group!');
+        return cb({"code": 601, "msg": driverConfig.errors[601]});
     }
-
-    let modelPath = __dirname + "/model/" + modelName + ".js";
-    return requireModel(modelPath, cb);
-
-    /**
-     * checks if model file exists, requires it and returns it.
-     * @param filePath
-     * @param cb
-     */
-    function requireModel(filePath, cb) {
-        //check if file exist. if not return error
-        fs.exists(filePath, function (exists) {
-            if (!exists) {
-                soajs.log.error('Requested Model Not Found!');
-                return cb(601);
-            }
-
-            driver.model = require(filePath);
-            return cb();
-        });
-    }
-
 }
-
-function checkUserTenantAccess(record, tenantObj) {
-    if (record && record.tenant && tenantObj && tenantObj.id) {
-        if (record.tenant.id === tenantObj.id) {
-            return ({"groups": record.groups, "tenant": record.tenant});
-        }
-        if (record.config && record.config.allowedTenants) {
-            for (let i = 0; i < record.config.allowedTenants.length; i++) {
-                if (record.config.allowedTenants[i].tenant && (record.config.allowedTenants[i].tenant.id === tenantObj.id)) {
-                    let response = {
-                        "groups": record.config.allowedTenants[i].groups,
-                        "tenant": record.config.allowedTenants[i].tenant
-                    };
-                    return (response);
-                }
-            }
-        }
-    }
-    return null;
-}
-
-/*
-function checkUserTenantAccess(record, tenantObj) {
-    if (record && record.tenant && tenantObj && tenantObj.id) {
-        if (record.tenant.id === tenantObj.id) {
-            return true;
-        }
-        if (record.config && record.config.allowedTenants) {
-            if (record.config.allowedTenants[tenantObj.id]) {
-                return true;
-            }
-        }
-    }
-    return false;
-}
-*/
-/*
-function getTenantGroup(record, tenantObj) {
-    if (record && record.tenant && tenantObj && tenantObj.id) {
-        if (record.tenant.id === tenantObj.id) {
-            return ({"groups": record.groups, "tenant": record.tenant});
-        }
-        if (record.config && record.config.allowedTenants) {
-            if (record.config.allowedTenants[tenantObj.id] && record.config.allowedTenants[tenantObj.id].groups) {
-                let response = {
-                    "groups": record.config.allowedTenants[tenantObj.id].groups,
-                    "tenant": {"id": tenantObj.id, "code": tenantObj.code}
-                };
-                if (record.config.allowedTenants[tenantObj.id].pin)
-                    response.tenant.pin = record.config.allowedTenants[tenantObj.id].pin;
-                return (response);
-            }
-        }
-    }
-    return null;
-}
-*/
-const utilities = require("./lib/helpers.js");
 
 let driver = {
-    "model": null,
+    "modelInit": false,
 
     /**
      * Initialize passport based on the strategy requested
      *
+     * @param req
+     * @param cb
      */
     "passportLibInit": function (req, cb) {
-        passportLib.init(req, cb);
+        BL.passport.init(req, cb);
     },
 
     /**
      * Authenticate through passport
      *
+     * @param req
+     * @param response
+     * @param passport
      */
-    "passportLibInitAuth": function (req, response, passport) {
-        passportLib.initAuth(req, response, passport);
+    "passportLibInitAuth": function (req, response, passport, cb) {
+        BL.passport.initAuth(req, response, passport, cb);
     },
 
     /**
      * Get driver, do what is needed before authenticating, and authenticate
      *
+     * @param req
+     * @param res
+     * @param passport
+     * @param cb
      */
     "passportLibAuthenticate": function (req, res, passport, cb) {
         let authentication = req.soajs.inputmaskData.strategy;
 
-        passportLib.getDriver(req, false, function (err, passportDriver) {
+        BL.passport.getDriver(req, false, function (err, passportDriver) {
             passportDriver.preAuthenticate(req, function () {
                 passport.authenticate(authentication, {session: false}, function (err, user) {
                     if (err) {
                         req.soajs.log.error(err);
-                        return cb({"code": 499, "msg": err.toString()});
+                        return cb({"code": 720, "msg": driverConfig.errors[720]});
                     }
                     if (!user) {
-                        cb({"code": 403, "msg": req.soajs.config.errors[403]});
+                        cb({"code": 403, "msg": driverConfig.errors[403]});
                     }
 
                     req.soajs.inputmaskData.user = user;
-                    initBLModel(req.soajs, function (err) {
-                        if (err) {
-                            return cb(err);
+                    initBLModel(req.soajs, function (error) {
+                        if (error) {
+                            return cb(error);
                         }
-                        let mode = req.soajs.inputmaskData.strategy;
-                        utilities.saveUser(req.soajs, driver.model, mode, user, function (error, data) {
-                            cb(error, data);
+                        req.soajs.inputmaskData.mode = req.soajs.inputmaskData.strategy;
+                        let modelUserObj = new SSOT.user(req.soajs);
+                        BL.user.save(req.soajs, req.soajs.inputmaskData, modelUserObj, (error, response) => {
+                            modelUserObj.closeConnection();
+                            cb(error, response);
                         });
                     });
                 })(req, res);
-
             });
         });
-
     },
 
-
-    "loginByPin": function (soajs, data, cb) {
-        let criteria = {
-            $and: [
-                {
-                    $or: [
-                        {'tenant.pin.code': data.pin},
-                        {'config.allowedTenants.tenant.pin.code': data.pin}
-                    ]
-                },
-                {'status': 'active'}
-            ]
-        };
-        initBLModel(soajs, function (err) {
-            if (err) {
-                return cb(err);
-            }
-            driver.model.initConnection(soajs);
-            utilities.findRecord(soajs, driver.model, criteria, cb, function (record) {
+    /**
+     * Login by pin code
+     *
+     * @param soajs
+     * @param input
+     * @param cb
+     */
+    "loginByPin": function (soajs, input, cb) {
+        initBLModel(soajs, function (error) {
+            if (error)
+                return cb(error);
+            if (!input || !input.pin)
+                return cb({"code": 403, "msg": driverConfig.errors[403]});
+            let modelUserObj = new SSOT.user(soajs);
+            BL.user.find(soajs, {"pin": input.pin}, modelUserObj, (error, record) => {
+                if (error) {
+                    modelUserObj.closeConnection();
+                    return cb(error);
+                }
+                if (!record) {
+                    modelUserObj.closeConnection();
+                    return cb({"code": 403, "msg": driverConfig.errors[403]});
+                }
                 delete record.password;
                 delete record.socialId;
-                let userTenant = checkUserTenantAccess(record, soajs.tenant);
+                let userTenant = BL.common.checkUserTenantAccess(record, soajs.tenant);
                 if (!userTenant) {
-                    return cb(403);
+                    modelUserObj.closeConnection();
+                    return cb({"code": 403, "msg": driverConfig.errors[403]});
                 }
-                if (userTenant && userTenant.groups && Array.isArray(userTenant.groups) && userTenant.groups.length !== 0) {
+                if (userTenant.groups && Array.isArray(userTenant.groups) && userTenant.groups.length !== 0) {
                     record.groups = userTenant.groups;
                     record.tenant = userTenant.tenant;
                     //Get Groups config
-                    utilities.findGroups(soajs, driver.model, record, function (record) {
+                    let modelGroupObj = new SSOT.group(soajs);
+                    let data = {
+                        "groups": record.groups
+                    };
+                    BL.group.find(soajs, data, modelGroupObj, function (error, groups) {
+                        modelGroupObj.closeConnection();
+                        if (error) {
+                            modelUserObj.closeConnection();
+                            return cb(error);
+                        }
+                        if (groups && Array.isArray(groups) && groups.length !== 0)
+                            record.groupsConfig = groups;
                         returnUser(record);
                     });
                 }
@@ -195,15 +162,14 @@ let driver = {
                     returnUser(record);
                 }
 
-                //TODO: add last login here
-                record.lastLogin = new Date().getTime();
-                utilities.updateLastLogin(soajs, driver.model, record, () => {
-
-                });
-
                 function returnUser(record) {
-                    utilities.assureConfig(soajs, record);
-                    driver.model.closeConnection(soajs);
+                    let data = {
+                        "username": record.username
+                    };
+                    BL.user.lastLogin(soajs, data, modelUserObj, () => {
+                        modelUserObj.closeConnection();
+                    });
+                    BL.user.assureConfig(record);
                     return cb(null, record);
                 }
             });
@@ -211,51 +177,65 @@ let driver = {
     },
 
     /**
-     * Verify login credentials and login
-     *
+     * Login with username and password
+     * @param soajs
+     * @param input
+     * @param cb
      */
-    "login": function (soajs, data, cb) {
-        let username = data.username;
-        let password = data.password;
-        let criteria = {
-            'username': username,
-            'status': 'active'
-        };
-
-        let pattern = soajsValidator.SchemaPatterns.email;
-        if (pattern.test(username)) {
-            delete criteria.username;
-            criteria.email = username;
-        }
-
-        initBLModel(soajs, function (err) {
-            if (err) {
-                return cb(err);
-            }
-            driver.model.initConnection(soajs);
-            utilities.findRecord(soajs, driver.model, criteria, cb, function (record) {
-                let myConfig = driverConfig;
-                if (soajs.config) {
-                    myConfig = soajs.config;
+    "login": function (soajs, input, cb) {
+        initBLModel(soajs, function (error) {
+            if (error)
+                return cb(error);
+            let modelUserObj = new SSOT.user(soajs);
+            let data = {};
+            let pattern = soajsValidator.SchemaPatterns.email;
+            if (!input || !input.username)
+                return cb({"code": 403, "msg": driverConfig.errors[403]});
+            if (pattern.test(input.username))
+                data.email = input.username;
+            else
+                data.username = input.username;
+            BL.user.find(soajs, data, modelUserObj, (error, record) => {
+                if (error) {
+                    modelUserObj.closeConnection();
+                    return cb(error);
                 }
-                utilities.comparePasswd(soajs.servicesConfig.urac, password, record.password, myConfig, function (err, response) {
+                if (!record) {
+                    modelUserObj.closeConnection();
+                    return cb({"code": 403, "msg": driverConfig.errors[403]});
+                }
+                let myConfig = driverConfig;
+                if (soajs.config)
+                    myConfig = soajs.config;
+                BL.common.comparePasswd(soajs.servicesConfig.urac, input.password, record.password, myConfig, (err, response) => {
                     if (err || !response) {
-                        driver.model.closeConnection(soajs);
-                        return cb(413);
+                        soajs.log.error(err);
+                        modelUserObj.closeConnection();
+                        return cb({"code": 402, "msg": driverConfig.errors[402]});
                     }
                     delete record.password;
                     delete record.socialId;
-
-                    let userTenant = checkUserTenantAccess(record, soajs.tenant);
+                    let userTenant = BL.common.checkUserTenantAccess(record, soajs.tenant);
                     if (!userTenant) {
-                        driver.model.closeConnection(soajs);
-                        return cb(403);
+                        modelUserObj.closeConnection();
+                        return cb({"code": 403, "msg": driverConfig.errors[403]});
                     }
-                    if (userTenant && userTenant.groups && Array.isArray(userTenant.groups) && userTenant.groups.length !== 0) {
+                    if (userTenant.groups && Array.isArray(userTenant.groups) && userTenant.groups.length !== 0) {
                         record.groups = userTenant.groups;
                         record.tenant = userTenant.tenant;
                         //Get Groups config
-                        utilities.findGroups(soajs, driver.model, record, function (record) {
+                        let modelGroupObj = new SSOT.group(soajs);
+                        let data = {
+                            "groups": record.groups
+                        };
+                        BL.group.find(soajs, data, modelGroupObj, function (error, groups) {
+                            modelGroupObj.closeConnection();
+                            if (error) {
+                                modelUserObj.closeConnection();
+                                return cb(error);
+                            }
+                            if (groups && Array.isArray(groups) && groups.length !== 0)
+                                record.groupsConfig = groups;
                             returnUser(record);
                         });
                     }
@@ -263,20 +243,17 @@ let driver = {
                         returnUser(record);
                     }
 
-                    //TODO: add last login here
-                    record.lastLogin = new Date().getTime();
-                    utilities.updateLastLogin(soajs, driver.model, record, () => {
-
-                    });
-
                     function returnUser(record) {
-                        utilities.assureConfig(soajs, record);
-                        driver.model.closeConnection(soajs);
+                        let data = {
+                            "username": record.username
+                        };
+                        BL.user.lastLogin(soajs, data, modelUserObj, () => {
+                            modelUserObj.closeConnection();
+                        });
+                        BL.user.assureConfig(record);
                         return cb(null, record);
                     }
-
                 });
-
             });
         });
     },
@@ -284,61 +261,83 @@ let driver = {
     /**
      * Get logged in record from database
      *
+     * @param soajs
+     * @param input
+     * @param cb
      */
-    "getRecord": function (soajs, data, cb) {
-        initBLModel(soajs, function (err) {
-            if (err) {
-                return cb(err);
+    "getRecord": function (soajs, input, cb) {
+        initBLModel(soajs, function (error) {
+            if (error) {
+                return cb(error);
             }
-            driver.model.initConnection(soajs);
-            let criteria = null;
-            if (!(data.username || data.id)) {
-                driver.model.closeConnection(soajs);
-                return cb(411);
+            let modelUserObj = new SSOT.user(soajs);
+            let data = {};
+            if (input.username) {
+                data.username = input.username;
+                resume();
             }
-            if (data.username) {
-                criteria = {
-                    'username': data.username
-                };
+            else if (input.id) {
+                data.id = input.id;
+                modelUserObj.validateId(data, (err, _id) => {
+                    if (err) {
+                        modelUserObj.closeConnection();
+                        soajs.log.error(err);
+                        return cb({"code": 404, "msg": driverConfig.errors[404]});
+                    }
+                    data.id = _id;
+                    resume();
+                });
             }
             else {
-                let id = null;
-                try {
-                    id = driver.model.validateId(soajs, data.id);
-                    criteria = {
-                        '_id': id
-                    };
-                }
-                catch (e) {
-                    driver.model.closeConnection(soajs);
-                    return cb(411);
-                }
+                resume();
             }
-            if (!criteria) {
-                driver.model.closeConnection(soajs);
-                return cb(403);
-            }
-            utilities.findRecord(soajs, driver.model, criteria, cb, function (record) {
-                delete record.password;
 
-                let groupInfo = checkUserTenantAccess(record, soajs.tenant);
-                if (groupInfo && groupInfo.groups && Array.isArray(groupInfo.groups) && groupInfo.groups.length !== 0) {
-                    record.groups = groupInfo.groups;
-                    record.tenant = groupInfo.tenant;
-                    utilities.findGroups(soajs, driver.model, record, function (record) {
+            function resume() {
+                BL.user.find(soajs, data, modelUserObj, (error, record) => {
+                    if (error) {
+                        modelUserObj.closeConnection();
+                        return cb(error);
+                    }
+                    if (!record) {
+                        modelUserObj.closeConnection();
+                        return cb({"code": 403, "msg": driverConfig.errors[403]});
+                    }
+                    delete record.password;
+                    let userTenant = BL.common.checkUserTenantAccess(record, soajs.tenant);
+                    if (!userTenant) {
+                        modelUserObj.closeConnection();
+                        return cb({"code": 403, "msg": driverConfig.errors[403]});
+                    }
+                    if (userTenant.groups && Array.isArray(userTenant.groups) && userTenant.groups.length !== 0) {
+                        record.groups = userTenant.groups;
+                        record.tenant = userTenant.tenant;
+                        //Get Groups config
+                        let modelGroupObj = new SSOT.group(soajs);
+                        let data = {
+                            "groups": record.groups
+                        };
+                        BL.group.find(soajs, data, modelGroupObj, function (error, groups) {
+                            modelGroupObj.closeConnection();
+                            if (error) {
+                                modelUserObj.closeConnection();
+                                return cb(error);
+                            }
+                            if (groups && Array.isArray(groups) && groups.length !== 0)
+                                record.groupsConfig = groups;
+                            returnUser(record);
+                        });
+                    }
+                    else {
                         returnUser(record);
-                    });
-                }
-                else {
-                    returnUser(record);
-                }
+                    }
 
-                function returnUser(record) {
-                    utilities.assureConfig(soajs, record);
-                    driver.model.closeConnection(soajs);
-                    return cb(null, record);
-                }
-            });
+                    function returnUser(record) {
+                        modelUserObj.closeConnection();
+                        BL.user.assureConfig(record);
+                        return cb(null, record);
+                    }
+                });
+            }
         });
     },
     /**
@@ -368,7 +367,7 @@ let driver = {
             openam = soajs.servicesConfig.urac.openam;
         }
         else {
-            return cb({"code": 712, "msg": soajs.config.errors[712]});
+            return cb({"code": 712, "msg": driverConfig.errors[712]});
         }
 
         let openamAttributesURL = openam.attributesURL;
@@ -383,32 +382,36 @@ let driver = {
 
             if (error) {
                 soajs.log.error(error);
-                return cb({"code": 710, "msg": soajs.config.errors[710]});
+                return cb({"code": 710, "msg": driverConfig.errors[710]});
             }
 
             if (!response || response.statusCode !== 200) {
                 soajs.log.error("OpenAM token invalid!");
-                return cb({"code": 711, "msg": soajs.config.errors[711]});
+                return cb({"code": 711, "msg": driverConfig.errors[711]});
             }
 
             try {
                 userRecord = JSON.parse(body);
             } catch (err) {
                 soajs.log.error("OpenAM response invalid!");
-                return cb({"code": 712, "msg": soajs.config.errors[712]});
+                return cb({"code": 713, "msg": driverConfig.errors[713]});
             }
 
             soajs.log.debug('Authenticated!');
 
-            initBLModel(soajs, function (err) {
-                if (err) {
-                    return cb(err);
+            initBLModel(soajs, function (error) {
+                if (error) {
+                    return cb(error);
                 }
-                utilities.saveUser(soajs, driver.model, 'openam', {
-                    userRecord: userRecord,
-                    attributesMap: openamAttributesMap
-                }, function (error, record) {
-                    return cb(null, record);
+                let modelUserObj = new SSOT.user(soajs);
+                BL.user.save(soajs, {
+                    "user": {
+                        userRecord: userRecord,
+                        attributesMap: openamAttributesMap
+                    }, "mode": "openam"
+                }, modelUserObj, (error, record) => {
+                    modelUserObj.closeConnection();
+                    return cb(error, record);
                 });
             });
         });
@@ -426,7 +429,7 @@ let driver = {
             ldapServer = soajs.servicesConfig.urac.ldapServer;
         }
         else {
-            return cb({"code": 706, "msg": soajs.config.errors[706]});
+            return cb({"code": 706, "msg": driverConfig.errors[706]});
         }
         let host = ldapServer.host;
         let port = ldapServer.port;
@@ -450,27 +453,27 @@ let driver = {
                 soajs.log.error(err);
                 if (err.code && err.code === 'ECONNREFUSED') {
                     soajs.log.error("Connection Refused!");
-                    return cb({"code": 700, "msg": soajs.config.errors[700]});
+                    return cb({"code": 700, "msg": driverConfig.errors[700]});
                 }
                 if (err.lde_message) {
                     if (err.lde_message.includes('Incorrect DN given')) { // invalid admin username
                         soajs.log.error("Incorrect DN given!");
-                        return cb({"code": 701, "msg": soajs.config.errors[701]});
+                        return cb({"code": 701, "msg": driverConfig.errors[701]});
                     }
 
                     if (err.lde_message.includes('INVALID_CREDENTIALS') && err.lde_message.includes(adminUser)) { // invalid admin credentials (wrong admin password)
                         soajs.log.error("Invalid Admin Credentials");
-                        return cb({"code": 702, "msg": soajs.config.errors[702]});
+                        return cb({"code": 702, "msg": driverConfig.errors[702]});
                     }
 
                     if (err.lde_message.includes('INVALID_CREDENTIALS') && err.lde_message.includes(filter)) { // invalid user credentials (wrong user password)
                         soajs.log.error("Invalid User Credentials");
-                        let obj = {"code": 703, "msg": soajs.config.errors[703]};
+                        let obj = {"code": 703, "msg": driverConfig.errors[703]};
                         return cb(obj);
                     }
                 }
 
-                return cb({"code": 704, "msg": soajs.config.errors[704]});
+                return cb({"code": 704, "msg": driverConfig.errors[704]});
             }
 
             if (auth) {
@@ -479,14 +482,18 @@ let driver = {
                 ad.find(filter, function (err, user) {
                     // since the user is authenticated, no error can be generated in this find call
                     // since we are searching using the filter => we will have one result
-                    let userRecord = user.other[0];
-
-                    initBLModel(soajs, function (err) {
-                        if (err) {
-                            return cb(err);
+                    initBLModel(soajs, function (error) {
+                        if (error) {
+                            return cb(error);
                         }
-                        utilities.saveUser(soajs, driver.model, 'ldap', userRecord, function (error, record) {
-                            return cb(null, record);
+
+                        let modelUserObj = new SSOT.user(soajs);
+                        BL.user.save(soajs, {
+                            "user": user.other[0],
+                            "mode": "ldap"
+                        }, modelUserObj, (error, record) => {
+                            modelUserObj.closeConnection();
+                            return cb(error, record);
                         });
                     });
 
@@ -495,7 +502,7 @@ let driver = {
             }
             else {
                 soajs.log.error("Authentication failed.");
-                return cb({"code": 705, "msg": soajs.config.errors[705]});
+                return cb({"code": 705, "msg": driverConfig.errors[705]});
             }
         });
     }
