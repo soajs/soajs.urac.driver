@@ -27,6 +27,7 @@
     "grunt-istanbul": "0.8.0",
     "grunt-coveralls": "2.0.0",
     "ldapjs": "1.0.2",
+    "mocha": "3.2.0",
     "nock": "*",
     "shelljs": "0.8.3",
 
