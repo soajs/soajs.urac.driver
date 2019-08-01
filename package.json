@@ -44,6 +44,6 @@
     "passport-twitter": "1.0.4",
     "request": "2.84.0",
 
-    "soajs.core.modules": "2.5.8"
+    "soajs.core.modules": "2.5.10"
   }
 }
