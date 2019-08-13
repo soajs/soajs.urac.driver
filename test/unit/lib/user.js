@@ -136,7 +136,8 @@ describe("Unit test for: lib - user", function () {
     });
     it("test - find - pin", function (done) {
         let data = {
-            "pin": "1235"
+            "pin": "1235",
+            "tId": "5c0e74ba9acc3c5a84a51259"
         };
         BL.find(soajs, data, modelUserObj, (error, record) => {
             assert.equal(record.username, "owner");

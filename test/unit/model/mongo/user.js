@@ -147,7 +147,7 @@ describe("Unit test for: model - user", function () {
         });
     });
     it("test - getUserByPin", function (done) {
-        modelObj.getUserByPin({"pin": "1235"}, (error, record) => {
+        modelObj.getUserByPin({"pin": "1235", "tId": "5c0e74ba9acc3c5a84a51259"}, (error, record) => {
             assert.equal(record.username, "owner");
             done();
         });

@@ -123,7 +123,7 @@ let driver = {
             if (!input || !input.pin)
                 return cb({"code": 403, "msg": driverConfig.errors[403]});
             let modelUserObj = new SSOT.user(soajs);
-            BL.user.find(soajs, {"pin": input.pin}, modelUserObj, (error, record) => {
+            BL.user.find(soajs, {"pin": input.pin, "tId": soajs.tenant.id}, modelUserObj, (error, record) => {
                 if (error) {
                     modelUserObj.closeConnection();
                     return cb(error);

@@ -290,16 +290,17 @@ User.prototype.getUserByUsernameOrId = function (data, cb) {
  *
  * @param cb
  */
+
 User.prototype.getUserByPin = function (data, cb) {
     let __self = this;
-    if (!data || !data.pin) {
-        let error = new Error("pin is required.");
+    if (!data || (!data.pin && !data.tId)) {
+        let error = new Error("pin and tId are required.");
         return cb(error, null);
     }
     let condition = {
         $or: [
-            {'tenant.pin.code': data.pin},
-            {'config.allowedTenants.tenant.pin.code': data.pin}
+            {$and: [{'tenant.pin.code': data.pin}, {'tenant.id': data.tId}]},
+            {"config.allowedTenants": {"$elemMatch": {$and: [{'tenant.pin.code': data.pin}, {'tenant.id': data.tId}]}}}
         ]
     };
     __self.mongoCore.findOne(colName, condition, null, null, (err, record) => {
