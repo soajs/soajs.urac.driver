@@ -35,17 +35,32 @@ function User(soajs, mongoCore) {
             });
             __self.mongoCore.createIndex(colName,
                 {
-                    'config.allowedTenants.tenant.pin.code': 1,
-                    'config.allowedTenants.tenant.id': 1
-                }, {unique: true, sparse: true}, function () {
-                });
+                    "config.allowedTenants.tenant.pin.code": 1,
+                    "config.allowedTenants.tenant.id": 1
+                },
+                {
+                    unique: true,
+                    partialFilterExpression: {
+                        "config.allowedTenants.tenant.pin.code": {
+                            "$exists": true
+                        }
+                    }
+                }
+            );
             __self.mongoCore.createIndex(colName,
                 {
-                    'tenant.pin.code': 1,
-                    'tenant.id': 1
-                }, {unique: true, sparse: true}, function () {
-                });
-
+                    "tenant.pin.code": 1,
+                    "tenant.id": 1
+                },
+                {
+                    unique: true,
+                    partialFilterExpression: {
+                        "tenant.pin.code": {
+                            "$exists": true
+                        }
+                    }
+                }
+            );
             //TODO: missing index for socialId.facebook.id
 
             soajs.log.debug("Indexes @ " + colName + " for " + tCode + "_urac Updated!");
