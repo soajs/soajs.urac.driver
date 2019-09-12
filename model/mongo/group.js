@@ -32,7 +32,7 @@ function Group(soajs, mongoCore) {
         __self.mongoCore = new Mongo(soajs.meta.tenantDB(tenantMetaDB, "urac", tCode));
         if (indexing && tId && !indexing[tId]) {
             indexing[tId] = true;
-            __self.mongoCore.createIndex(colName, {"code": 1, "tenant.id": 1}, {unique: true}, () =>{
+            __self.mongoCore.createIndex(colName, {"code": 1}, {unique: true}, () =>{
             });
             soajs.log.debug("Indexes @ " + colName + " for " + tCode + "_urac Updated!");
         }
@@ -78,9 +78,6 @@ Group.prototype.getGroups = function (data, cb) {
             "$in": data.groups
         }
     };
-    if (data.tId) {
-        condition["tenant.id"] = data.tId;
-    }
     __self.mongoCore.find(colName, condition, null, null, (err, records) => {
         return cb(err, records);
     });
