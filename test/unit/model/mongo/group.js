@@ -76,7 +76,7 @@ describe("Unit test for: model - group", function () {
             done();
         });
     });
-    it("test - getGroups - with data & with wrong tId", function (done) {
+    it.skip("test - getGroups - with data & with wrong tId", function (done) {
         modelObj.getGroups({"groups": ["owner"], "tId": "5c0e74ba9acc3c5a84a51258"}, (error, records) => {
             assert.equal(records.length, 0);
             done();
