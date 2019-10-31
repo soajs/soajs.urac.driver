@@ -363,8 +363,8 @@ let driver = {
         let token = data.token;
         let openam;
 
-        if (soajs.servicesConfig.urac && soajs.servicesConfig.urac.openam) {
-            openam = soajs.servicesConfig.urac.openam;
+        if (soajs.servicesConfig && soajs.servicesConfig.openam) {
+            openam = soajs.servicesConfig.openam;
         }
         else {
             return cb({"code": 712, "msg": driverConfig.errors[712]});
@@ -425,8 +425,8 @@ let driver = {
         let password = data.password;
         let ldapServer;
 
-        if (soajs.servicesConfig.urac && soajs.servicesConfig.urac.ldapServer) {
-            ldapServer = soajs.servicesConfig.urac.ldapServer;
+        if (soajs.servicesConfig && soajs.servicesConfig.ldapServer) {
+            ldapServer = soajs.servicesConfig.ldapServer;
         }
         else {
             return cb({"code": 706, "msg": driverConfig.errors[706]});
