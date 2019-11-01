@@ -79,7 +79,7 @@ describe("Integration test for: ldap", function () {
     };
 
     it("test - ldapLogin - with the correct credentials", function (done) {
-        soajs.servicesConfig.urac.ldapServer = {
+        soajs.servicesConfig.ldapServer = {
             host: 'ldap://127.0.0.1',
             port: 10389,
             baseDN: 'ou=users,ou=system',
@@ -100,7 +100,7 @@ describe("Integration test for: ldap", function () {
         });
     });
     it("test - ldapLogin - with the wrong password", function (done) {
-        soajs.servicesConfig.urac.ldapServer = {
+        soajs.servicesConfig.ldapServer = {
             host: 'ldap://127.0.0.1',
             port: 10389,
             baseDN: 'ou=users,ou=system',
@@ -121,7 +121,7 @@ describe("Integration test for: ldap", function () {
         });
     });
     it("test - ldapLogin - with the wrong adminPassword in provision information", function (done) {
-        soajs.servicesConfig.urac.ldapServer = {
+        soajs.servicesConfig.ldapServer = {
             host: 'ldap://127.0.0.1',
             port: 10389,
             baseDN: 'ou=users,ou=system',
@@ -142,7 +142,7 @@ describe("Integration test for: ldap", function () {
         });
     });
     it("test - ldapLogin - with the wrong adminUser in provision information", function (done) {
-        soajs.servicesConfig.urac.ldapServer = {
+        soajs.servicesConfig.ldapServer = {
             host: 'ldap://127.0.0.1',
             port: 10389,
             baseDN: 'ou=users,ou=system',
@@ -163,7 +163,7 @@ describe("Integration test for: ldap", function () {
         });
     });
     it("test - ldapLogin - with no ldap ON", function (done) {
-        soajs.servicesConfig.urac.ldapServer = {
+        soajs.servicesConfig.ldapServer = {
             host: 'ldap://127.0.0.1',
             port: 10389,
             baseDN: 'ou=users,ou=system',

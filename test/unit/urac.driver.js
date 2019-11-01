@@ -203,7 +203,7 @@ describe("Unit test for: urac.driver", function () {
         });
     });
     it("test - openamLogin - error OpenAM connection", function (done) {
-        soajs.servicesConfig.urac.openam = {
+        soajs.servicesConfig.openam = {
             "attributesURL": "https://test.com/openam/identity/json/attributes",
             "attributesMap": [
                 {"field": 'sAMAccountName', "mapTo": 'id'},
@@ -228,7 +228,7 @@ describe("Unit test for: urac.driver", function () {
         });
     });
     it("test - openamLogin - Error in body.parse", function (done) {
-        soajs.servicesConfig.urac.openam = {
+        soajs.servicesConfig.openam = {
             "attributesURL": "https://test.com/openam/identity/json/attributes",
             "attributesMap": [
                 {"field": 'sAMAccountName', "mapTo": 'id'},
@@ -254,7 +254,7 @@ describe("Unit test for: urac.driver", function () {
         });
     });
     it("test - openamLogin", function (done) {
-        soajs.servicesConfig.urac.openam = {
+        soajs.servicesConfig.openam = {
             "attributesURL": "https://test.com/openam/identity/json/attributes",
             "attributesMap": [
                 {"field": 'sAMAccountName', "mapTo": 'id'},
