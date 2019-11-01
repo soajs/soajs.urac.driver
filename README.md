@@ -9,3 +9,9 @@ This repo is used by the soajs.urac and soajs.oauth to perform the login functio
 #### Documentation
 SOAJS URAC: [Reference Link](https://soajsorg.atlassian.net/wiki/spaces/URAC/overview)
 SOAJS oAuth: [Reference Link](https://soajsorg.atlassian.net/wiki/spaces/OAUT/overview)
+
+
+### License
+*Copyright SOAJS All Rights Reserved.*
+
+Use of this source code is governed by an Apache license that can be found in the LICENSE file at the root of this repository.
