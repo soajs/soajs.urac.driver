@@ -2,7 +2,7 @@
 
 module.exports = {
     "model": 'mongo',
-    "hashIterations": 1024,
+    "hashIterations": 12,
     "seedLength": 32,
     "errors": {
 
