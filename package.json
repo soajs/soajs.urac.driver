@@ -19,28 +19,29 @@
   },
   "devDependencies": {
     "grunt": "1.0.4",
-    "grunt-contrib-jshint": "2.1.0",
-    "grunt-jsdoc": "2.3.1",
     "grunt-contrib-clean": "2.0.0",
-    "grunt-mocha-test": "0.13.3",
-    "grunt-env": "0.4.4",
-    "grunt-istanbul": "0.8.0",
+    "grunt-contrib-copy": "1.0.0",
+    "grunt-contrib-jshint": "2.1.0",
     "grunt-coveralls": "2.0.0",
+    "grunt-env": "1.0.1",
+    "grunt-istanbul": "0.8.0",
+    "grunt-jsdoc": "2.4.0",
+    "grunt-mocha-test": "0.13.3",
+    "mocha": "6.2.2",
     "ldapjs": "1.0.2",
-    "mocha": "3.2.0",
-    "nock": "*",
+    "nock": "11.7.0",
     "shelljs": "0.8.3"
   },
   "dependencies": {
     "activedirectory": "0.7.2",
     "passport": "0.4.0",
-    "passport-azure-ad":"4.2.0",
-    "passport-facebook":"3.0.0",
+    "passport-azure-ad": "4.2.0",
+    "passport-facebook": "3.0.0",
     "passport-github": "1.1.0",
-    "passport-google-oauth":"2.0.0",
+    "passport-google-oauth": "2.0.0",
     "passport-local": "1.0.0",
     "passport-twitter": "1.0.4",
-    "request":"2.88.0",
-    "soajs.core.modules":"3.0.0"
+    "request": "2.88.0",
+    "soajs.core.modules": "3.0.0"
   }
 }
