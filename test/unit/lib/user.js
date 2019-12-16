@@ -75,15 +75,12 @@ describe("Unit test for: lib - user", function () {
 
     it("test - save - with data", function (done) {
         let user = {
-            "profile": {
-                "_json":
-                    {
-                        "first_name": "antoine",
-                        "last_name": "hage",
-                        "email": "antoine@soajs.org"
-                    },
-                "id": "123456789"
-            },
+            "firstName": "antoine",
+            "lastName": "hage",
+            "email": "antoine@soajs.org",
+            "password": '',
+            "username": "123456789",
+            "id": "123456789",
             "accessToken":"44a5399dcce96325fadfab908e614bf00e6fe967",
             "refreshToken":"ddfd5eb42417b480471b4cec06381244658ffc7a"
         };
@@ -97,15 +94,12 @@ describe("Unit test for: lib - user", function () {
 
     it("test - save - with data", function (done) {
         let user = {
-            "profile": {
-                "_json":
-                    {
-                        "first_name": "tony",
-                        "last_name": "hage",
-                        "email": "antoine@soajs.org"
-                    },
-                "id": "123456789"
-            },
+            "firstName": "tony",
+            "lastName": "hage",
+            "email": "antoine@soajs.org",
+            "password": '',
+            "username": "123456789",
+            "id": "123456789",
             "accessToken":"44a5399dcce96325fadfab908e614bf00e6fe967",
             "refreshToken":"ddfd5eb42417b480471b4cec06381244658ffc7a"
         };
