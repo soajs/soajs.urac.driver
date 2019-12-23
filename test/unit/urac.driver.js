@@ -5,7 +5,6 @@ const core = coreModules.core;
 const helper = require("../helper.js");
 const driver = helper.requireModule('./index.js');
 const assert = require('assert');
-const nock = require("nock");
 
 describe("Unit test for: urac.driver", function () {
     let id = null;
@@ -196,102 +195,22 @@ describe("Unit test for: urac.driver", function () {
         });
     });
 
-    it("test - openamLogin - error config", function (done) {
-        driver.openamLogin(soajs, {}, (error) => {
-            assert.equal(error.code, "712");
+    it("test - save user", function (done) {
+        let user = {
+            "firstName": "antoine",
+            "lastName": "hage",
+            "email": "antoine@soajs.org",
+            "password": '',
+            "username": "123456789",
+            "id": "123456789",
+            "accessToken":"44a5399dcce96325fadfab908e614bf00e6fe967",
+            "refreshToken":"ddfd5eb42417b480471b4cec06381244658ffc7a"
+        };
+        let input = {"user": user, "mode": "facebook"};
+
+        driver.saveUser(soajs, input, (error, response) => {
+            assert.equal(response.username, "123456789");
             done();
         });
     });
-    it("test - openamLogin - error OpenAM connection", function (done) {
-        soajs.servicesConfig.openam = {
-            "attributesURL": "https://test.com/openam/identity/json/attributes",
-            "attributesMap": [
-                {"field": 'sAMAccountName', "mapTo": 'id'},
-                {"field": 'sAMAccountName', "mapTo": 'username'},
-                {"field": 'mail', "mapTo": 'email'},
-                {"field": 'givenname', "mapTo": 'firstName'},
-                {"field": 'sn', "mapTo": 'lastName'}
-            ],
-            "timeout": 5000
-        };
-        let input = {
-            "token": "123456"
-        };
-        nock('https://test.com')
-            .post('/openam/identity/json/attributes')
-            .query(true) // any params sent
-            .replyWithError('something awful happened');
-
-        driver.openamLogin(soajs, input, (error) => {
-            assert.equal(error.code, "710");
-            done();
-        });
-    });
-    it("test - openamLogin - Error in body.parse", function (done) {
-        soajs.servicesConfig.openam = {
-            "attributesURL": "https://test.com/openam/identity/json/attributes",
-            "attributesMap": [
-                {"field": 'sAMAccountName', "mapTo": 'id'},
-                {"field": 'sAMAccountName', "mapTo": 'username'},
-                {"field": 'mail', "mapTo": 'email'},
-                {"field": 'givenname', "mapTo": 'firstName'},
-                {"field": 'sn', "mapTo": 'lastName'}
-            ],
-            "timeout": 5000
-        };
-        let input = {
-            "token": "123456"
-        };
-        let mockedReply = ''; // sending a string instead of an object
-        nock('https://test.com')
-            .post('/openam/identity/json/attributes')
-            .query(true) // any params sent
-            .reply(200, mockedReply);
-
-        driver.openamLogin(soajs, input, (error) => {
-            assert.equal(error.code, "713");
-            done();
-        });
-    });
-    it("test - openamLogin", function (done) {
-        soajs.servicesConfig.openam = {
-            "attributesURL": "https://test.com/openam/identity/json/attributes",
-            "attributesMap": [
-                {"field": 'sAMAccountName', "mapTo": 'id'},
-                {"field": 'sAMAccountName', "mapTo": 'username'},
-                {"field": 'mail', "mapTo": 'email'},
-                {"field": 'givenname', "mapTo": 'firstName'},
-                {"field": 'sn', "mapTo": 'lastName'}
-            ],
-            "timeout": 5000
-        };
-        let input = {
-            "token": "123456"
-        };
-        let mockedReply = {
-            attributes: [
-                {name: 'sAMAccountName', values: ['etienz']},
-                {name: 'mail', values: ['mail@mail.com']},
-                {name: 'givenname', values: ['antoine']},
-                {name: 'sn', values: ['hage']}
-            ]
-        };
-        nock('https://test.com')
-            .post('/openam/identity/json/attributes')
-            .query(true) // any params sent
-            .reply(200, mockedReply);
-
-        driver.openamLogin(soajs, input, (error, record) => {
-            assert.equal(record.lastName, 'hage');
-            done();
-        });
-    });
-
-    it("test - ldapLogin - error config", function (done) {
-        driver.ldapLogin(soajs, {}, (error) => {
-            assert.equal(error.code, "706");
-            done();
-        });
-    });
-
 });

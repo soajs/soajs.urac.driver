@@ -79,7 +79,7 @@ module.exports = function (grunt) {
                 }
             },
             files: {
-                src: ['index.js', 'config.js', 'lib/*.js', 'lib/drivers/*.js', 'model/mongo/*.js', 'test/helper.js', 'test/unit/**/*.js', 'test/integration/**/*.js']
+                src: ['index.js', 'config.js', 'lib/*.js', 'lib/drivers/*.js', 'model/mongo/*.js', 'test/helper.js', 'test/unit/**/*.js']
             },
             gruntfile: {
                 src: 'Gruntfile.js'
@@ -163,10 +163,9 @@ module.exports = function (grunt) {
 
     process.env.SHOW_LOGS = grunt.option('showLogs');
     grunt.registerTask("default", ['jshint']);
-    grunt.registerTask("integration", ['env:mochaTest', 'mochaTest:integration']);
     grunt.registerTask("unit", ['env:mochaTest', 'mochaTest:unit']);
-    grunt.registerTask("test", ['clean', 'env:coverage', 'instrument', 'mochaTest:unit', 'mochaTest:integration', 'storeCoverage', 'makeReport']);
-    grunt.registerTask("coverage", ['clean', 'env:coverage', 'instrument', 'mochaTest:unit', 'mochaTest:integration', 'storeCoverage', 'makeReport', 'coveralls']);
+    grunt.registerTask("test", ['clean', 'env:coverage', 'instrument', 'mochaTest:unit', 'storeCoverage', 'makeReport']);
+    grunt.registerTask("coverage", ['clean', 'env:coverage', 'instrument', 'mochaTest:unit', 'storeCoverage', 'makeReport', 'coveralls']);
 
 };
 
