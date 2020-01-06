@@ -51,35 +51,41 @@ module.exports = function (grunt) {
     grunt.initConfig({
         //Defining jshint tasks
         jshint: {
-            options: {
-                "bitwise": true,
-                "eqeqeq": true,
-                "forin": true,
-                "newcap": true,
-                "noarg": true,
-                "undef": true,
-                "unused": false,
-                "eqnull": true,
-                "laxcomma": true,
-                "loopfunc": true,
-                "sub": true,
-                "supernew": true,
-                "validthis": true,
-                "node": true,
-                "maxerr": 100,
-                "indent": 2,
-                "esversion": 6,
-                "globals": {
-                    "describe": false,
-                    "it": false,
-                    "before": false,
-                    "beforeEach": false,
-                    "after": false,
-                    "afterEach": false
-                }
-            },
+	        options: {
+		        "bitwise": true,
+		        "curly": true,
+		        "eqeqeq": true,
+		        "eqnull": true,
+		        "esversion": 6,
+		        "forin": true,
+		        "latedef": "nofunc",
+		        "leanswitch": true,
+		        "maxerr": 100,
+		        "noarg": true,
+		        "nonbsp": true,
+		        "strict": "global",
+		        "undef": true,
+		        "unused": true,
+		        "varstmt": true,
+		
+		        //"validthis": true,
+		        //"loopfunc": true,
+		        //"sub": true,
+		        //"supernew": true,
+		
+		        "node": true,
+		
+		        "globals": {
+			        "describe": false,
+			        "it": false,
+			        "before": false,
+			        "beforeEach": false,
+			        "after": false,
+			        "afterEach": false
+		        }
+	        },
             files: {
-                src: ['index.js', 'config.js', 'lib/*.js', 'lib/drivers/*.js', 'model/mongo/*.js', 'test/helper.js', 'test/unit/**/*.js']
+                src: ['index.js', 'config.js', 'Gruntfile.js', 'lib/*.js', 'model/mongo/*.js', 'test/helper.js', 'test/unit/**/*.js']
             },
             gruntfile: {
                 src: 'Gruntfile.js'
@@ -105,7 +111,7 @@ module.exports = function (grunt) {
         },
 
         instrument: {
-            files: ['index.js', 'config.js', 'lib/*.js', 'lib/drivers/*.js', 'model/mongo/*.js'],
+            files: ['index.js', 'config.js', 'lib/*.js', 'model/mongo/*.js'],
             options: {
                 lazy: false,
                 basePath: 'test/coverage/instrument/'
@@ -134,13 +140,6 @@ module.exports = function (grunt) {
                     timeout: 90000
                 },
                 src: ['test/unit/index.js']
-            },
-            integration: {
-                options: {
-                    reporter: 'spec',
-                    timeout: 90000
-                },
-                src: ['test/integration/index.js']
             }
         },
 
