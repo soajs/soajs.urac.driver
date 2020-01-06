@@ -65,7 +65,7 @@ describe("Unit test for: model - user", function () {
         });
     });
     it("test - lastLogin - error", function (done) {
-        modelObj.lastLogin({}, (error, record) => {
+        modelObj.lastLogin({}, (error) => {
             assert.ok(error);
             done();
         });
@@ -83,7 +83,7 @@ describe("Unit test for: model - user", function () {
         });
     });
     it("test - insertSocialNetworkUser - error", function (done) {
-        modelObj.insertSocialNetworkUser({"username": "owner"}, (error, record) => {
+        modelObj.insertSocialNetworkUser({"username": "owner"}, (error) => {
             assert.ok(error);
             done();
         });
@@ -116,7 +116,7 @@ describe("Unit test for: model - user", function () {
         });
     });
     it("test - getSocialNetworkUser - error", function (done) {
-        modelObj.getSocialNetworkUser({"username": "owner"}, (error, record) => {
+        modelObj.getSocialNetworkUser({"username": "owner"}, (error) => {
             assert.ok(error);
             done();
         });
@@ -129,7 +129,7 @@ describe("Unit test for: model - user", function () {
         });
     });
     it("test - getUserByEmail - error", function (done) {
-        modelObj.getUserByEmail({}, (error, record) => {
+        modelObj.getUserByEmail({}, (error) => {
             assert.ok(error);
             done();
         });
@@ -141,7 +141,7 @@ describe("Unit test for: model - user", function () {
         });
     });
     it("test - getUserByUsernameOrId - error", function (done) {
-        modelObj.getUserByUsernameOrId({}, (error, record) => {
+        modelObj.getUserByUsernameOrId({}, (error) => {
             assert.ok(error);
             done();
         });
@@ -153,7 +153,7 @@ describe("Unit test for: model - user", function () {
         });
     });
     it("test - getUserByPin - error", function (done) {
-        modelObj.getUserByPin({}, (error, record) => {
+        modelObj.getUserByPin({}, (error) => {
             assert.ok(error);
             done();
         });

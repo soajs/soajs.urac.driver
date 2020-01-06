@@ -56,7 +56,7 @@ describe("Unit test for: lib - user", function () {
 
     it("test - find - error", function (done) {
         let data = {};
-        BL.find(soajs, data, modelGroupObj, (error, record) => {
+        BL.find(soajs, data, modelGroupObj, (error) => {
             assert.ok(error);
             done();
         });

@@ -59,7 +59,7 @@ describe("Unit test for: model - group", function () {
         });
     });
     it("test - getGroups - with no data", function (done) {
-        modelObj.getGroups(null, (error, records) => {
+        modelObj.getGroups(null, (error) => {
             assert.ok(error);
             done();
         });

@@ -150,7 +150,7 @@ describe("Unit test for: urac.driver", function () {
             "username": "owner1",
             "password": "password"
         };
-        driver.login(soajs, input, (error, record) => {
+        driver.login(soajs, input, (error) => {
             assert.equal(error.code, "403");
             done();
         });
@@ -179,7 +179,7 @@ describe("Unit test for: urac.driver", function () {
         let input = {
             "id": "777777777"
         };
-        driver.getRecord(soajs, input, (error, record) => {
+        driver.getRecord(soajs, input, (error) => {
             assert.equal(error.code, "404");
             done();
         });
