@@ -138,7 +138,7 @@ User.prototype.getSocialNetworkUser = function (data, cb) {
 	let e = null;
 	if (data.email) {
 		e = {};
-		e['email'] = data.email;
+		e.email = data.email;
 	}
 	let c = {};
 	c['socialId.' + data.mode + '.id'] = data.id;
@@ -290,11 +290,11 @@ User.prototype.getUserByUsernameOrId = function (data, cb) {
 		return cb(error, null);
 	}
 	let condition = {};
-	if (data.id)
+	if (data.id) {
 		condition = {'_id': data.id};
-	else if (data.username)
+	} else if (data.username) {
 		condition = {'username': data.username};
-	
+	}
 	__self.mongoCore.findOne(colName, condition, null, null, (err, record) => {
 		return cb(err, record);
 	});

@@ -35,7 +35,9 @@ let lib = {
      */
     loadTasks: function (grunt, rootPath, tasks) {
         tasks.forEach(function (name) {
-            if (name === 'grunt-cli') return;
+            if (name === 'grunt-cli') {
+            	return;
+            }
             let cwd = process.cwd();
             process.chdir(rootPath); // load files from proper root, I don't want to install everything locally per module!
             grunt.loadNpmTasks(name);
