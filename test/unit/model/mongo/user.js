@@ -60,7 +60,8 @@ describe("Unit test for: model - user", function () {
     });
     it("test - lastLogin", function (done) {
         modelObj.lastLogin({"username": "owner", "lastLogin": new Date().getTime()}, (error, record) => {
-            assert.equal(record, 1);
+	        assert.ok(record);
+            assert.equal(record.nModified, 1);
             done();
         });
     });

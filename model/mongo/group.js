@@ -1,4 +1,13 @@
-"use strict";
+'use strict';
+
+/**
+ * @license
+ * Copyright SOAJS All Rights Reserved.
+ *
+ * Use of this source code is governed by an Apache license that can be
+ * found in the LICENSE file at the root of this repository
+ */
+
 const colName = "groups";
 const core = require("soajs.core.modules");
 const Mongo = core.mongo;
@@ -23,12 +32,6 @@ function Group(soajs, mongoCore) {
                 tenantMetaDB = soajs.tenant.roaming.tenantMetaDB;
             }
         }
-        /*
-        else if (soajs.tenant.main && soajs.tenant.main.code) {
-            tCode = soajs.tenant.main.code;
-            tId = soajs.tenant.main.id;
-        }
-        */
         __self.mongoCore = new Mongo(soajs.meta.tenantDB(tenantMetaDB, "urac", tCode));
         if (indexing && tId && !indexing[tId]) {
             indexing[tId] = true;

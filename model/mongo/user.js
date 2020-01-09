@@ -1,4 +1,13 @@
-"use strict";
+'use strict';
+
+/**
+ * @license
+ * Copyright SOAJS All Rights Reserved.
+ *
+ * Use of this source code is governed by an Apache license that can be
+ * found in the LICENSE file at the root of this repository
+ */
+
 const colName = "users";
 const core = require("soajs.core.modules");
 const Mongo = core.mongo;
@@ -114,7 +123,7 @@ User.prototype.lastLogin = function (data, cb) {
 	};
 	let condition = {'username': data.username};
 	let extraOptions = {};
-	__self.mongoCore.update(colName, condition, s, extraOptions, (err, record) => {
+	__self.mongoCore.updateOne(colName, condition, s, extraOptions, (err, record) => {
 		return cb(err, record);
 	});
 };
@@ -157,31 +166,6 @@ User.prototype.getSocialNetworkUser = function (data, cb) {
 	});
 };
 
-
-/**
- * To save a record of a user logged in via social network driver
- *
- * @param data
- *  should have:
- *      required (record)
- *      if _id is in the record then it is going to be save
- *      if _id is not in the record then it is going to insert
- *
- * @param cb
- */
-/*
-User.prototype.saveSocialNetworkUser = function (data, cb) {
-    let __self = this;
-    if (!data || !data.socialId) {
-        let error = new Error("user record with socialId is required.");
-        return cb(error, null);
-    }
-
-    __self.mongoCore.save(colName, data, (err, record) => {
-        return cb(err, record);
-    });
-};
-*/
 /**
  * To update a record of a user logged in via social network driver
  *
@@ -200,7 +184,11 @@ User.prototype.updateSocialNetworkUser = function (data, cb) {
 	}
 	
 	let condition = {'_id': data._id};
-	__self.mongoCore.update(colName, condition, data, {}, (err, record) => {
+	let extraOptions = {
+		'upsert': false
+	};
+	let s = {'$set': data};
+	__self.mongoCore.updateOne(colName, condition, s, extraOptions, (err, record) => {
 		return cb(err, record);
 	});
 };
@@ -227,30 +215,6 @@ User.prototype.insertSocialNetworkUser = function (data, cb) {
 	});
 };
 
-/**
- * To get a user by username and status
- *
- * @param data
- *  should have:
- *      required (username)
- *
- * @param cb
- */
-/*
-User.prototype.getUserByUsername = function (data, cb) {
-    let __self = this;
-    if (!data || !data.username) {
-        let error = new Error("username and status are required.");
-        return cb(error, null);
-    }
-    let condition = {
-        'username': data.username
-    };
-    __self.mongoCore.findOne(colName, condition, null, null, (err, records) => {
-        return cb(err, records);
-    });
-};
-*/
 /**
  * To get a user by email and status
  *

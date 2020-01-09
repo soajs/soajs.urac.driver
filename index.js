@@ -1,4 +1,12 @@
-"use strict";
+'use strict';
+
+/**
+ * @license
+ * Copyright SOAJS All Rights Reserved.
+ *
+ * Use of this source code is governed by an Apache license that can be
+ * found in the LICENSE file at the root of this repository
+ */
 
 const fs = require("fs");
 
@@ -120,7 +128,7 @@ let driver = {
 				if (soajs.config) {
 					myConfig = soajs.config;
 				}
-				BL.common.comparePasswd(soajs.servicesConfig.urac, input.password, record.password, myConfig, (err, response) => {
+				BL.common.comparePasswd(soajs.servicesConfig, input.password, record.password, myConfig, (err, response) => {
 					if (err || !response) {
 						soajs.log.error(err);
 						modelUserObj.closeConnection();
