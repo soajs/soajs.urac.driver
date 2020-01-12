@@ -16,7 +16,6 @@ describe("Unit test for: urac.driver", function () {
         },
         "servicesConfig": {
             "urac": {
-                "model": "oracle"
             }
         },
         "registry": {
@@ -52,13 +51,6 @@ describe("Unit test for: urac.driver", function () {
         },
         "config": helper.requireModule("./config.js")
     };
-    it("test - loginByPin - error model", function (done) {
-        soajs.servicesConfig.urac.model = "oracle";
-        driver.loginByPin(soajs, {}, (error) => {
-            assert.equal(error.code, "601");
-            done();
-        });
-    });
     it("test - loginByPin - error pin", function (done) {
         soajs.servicesConfig.urac.model = "mongo";
         driver.loginByPin(soajs, {}, (error) => {
@@ -197,19 +189,19 @@ describe("Unit test for: urac.driver", function () {
 
     it("test - save user", function (done) {
         let user = {
-            "firstName": "antoine",
+            "firstName": "mathieu",
             "lastName": "hage",
-            "email": "antoine@soajs.org",
+            "email": "mathieu@soajs.org",
             "password": '',
-            "username": "123456789",
-            "id": "123456789",
+            "username": "11111111111",
+            "id": "11111111111",
             "accessToken":"44a5399dcce96325fadfab908e614bf00e6fe967",
             "refreshToken":"ddfd5eb42417b480471b4cec06381244658ffc7a"
         };
         let input = {"user": user, "mode": "facebook"};
 
         driver.saveUser(soajs, input, (error, response) => {
-            assert.equal(response.username, "123456789");
+            assert.equal(response.username, "11111111111");
             done();
         });
     });

@@ -50,6 +50,21 @@ describe("Unit test for: lib - user", function () {
         },
         "config": helper.requireModule("./config.js")
     };
+    let soajs_subtenant = {
+    	"meta": soajs.meta,
+	    "registry": soajs.registry,
+    	"log": soajs.log,
+		"config" : soajs.config,
+	    "tenant": {
+		    "type": "client",
+		    "main": {
+			    "code": "TES0",
+			    "id": "5c0e74ba9acc3c5a84a51259"
+		    },
+		    "code": "TES1",
+		    "id": "5c0e74ba9acc3c5a84a5125a"
+	    }
+    };
 
     before((done) => {
         modelUserObj = new Model(soajs);
@@ -80,6 +95,7 @@ describe("Unit test for: lib - user", function () {
             "email": "antoine@soajs.org",
             "password": '',
             "username": "123456789",
+	        "groups": ["antoinegroup"],
             "id": "123456789",
             "accessToken":"44a5399dcce96325fadfab908e614bf00e6fe967",
             "refreshToken":"ddfd5eb42417b480471b4cec06381244658ffc7a"
@@ -92,23 +108,90 @@ describe("Unit test for: lib - user", function () {
     });
 
 
-    it("test - save - with data", function (done) {
+    it("test - save - with data - record exist", function (done) {
         let user = {
             "firstName": "tony",
             "lastName": "hage",
             "email": "antoine@soajs.org",
             "password": '',
             "username": "123456789",
+	        "groups": ["tonygroup"],
             "id": "123456789",
             "accessToken":"44a5399dcce96325fadfab908e614bf00e6fe967",
             "refreshToken":"ddfd5eb42417b480471b4cec06381244658ffc7a"
         };
         let data = {"user": user, "mode": "facebook"};
         BL.save(soajs, data, modelUserObj, (error, record) => {
+	        assert.equal(record.firstName, "tony");
             assert.ok(record);
             done();
         });
     });
+	
+	it("test - save - with data - record exist", function (done) {
+		let user = {
+			"firstName": "tony2",
+			"lastName": "hage",
+			"email": "antoine@soajs.org",
+			"password": '',
+			"username": "123456789",
+			"groups": ["tony2group"],
+			"id": "123456789",
+			"accessToken":"44a5399dcce96325fadfab908e614bf00e6fe967",
+			"refreshToken":"ddfd5eb42417b480471b4cec06381244658ffc7a"
+		};
+		let data = {"user": user, "mode": "facebook"};
+		BL.save(soajs_subtenant, data, modelUserObj, (error, record) => {
+			assert.equal(record.firstName, "tony2");
+			assert.ok(record);
+			done();
+		});
+	});
+	
+	it("test - save - with data - subtenant", function (done) {
+		let user = {
+			"firstName": "mateo",
+			"lastName": "hage",
+			"email": "mateo@soajs.org",
+			"password": '',
+			"username": "22222222",
+			"groups": ["mateogroup"],
+			"id": "22222222",
+			"accessToken":"44a5399dcce96325fadfab908e614bf00e6fe967",
+			"refreshToken":"ddfd5eb42417b480471b4cec06381244658ffc7a"
+		};
+		let data = {"user": user, "mode": "facebook"};
+		BL.save(soajs_subtenant, data, modelUserObj, (error, record) => {
+			assert.equal(record.firstName, "mateo");
+			assert.equal(record.config.allowedTenants[0].tenant.id, "5c0e74ba9acc3c5a84a5125a");
+			assert.ok(record);
+			done();
+		});
+	});
+	
+	it("test - save - with data - same subtenant", function (done) {
+		let user = {
+			"firstName": "mateo2",
+			"lastName": "hage",
+			"email": "mateo@soajs.org",
+			"password": '',
+			"username": "22222222",
+			"groups": ["mateo2group"],
+			"id": "22222222",
+			"accessToken":"44a5399dcce96325fadfab908e614bf00e6fe967",
+			"refreshToken":"ddfd5eb42417b480471b4cec06381244658ffc7a"
+		};
+		soajs_subtenant.tenant.id = "4444444444444444";
+		soajs_subtenant.tenant.code = "CCCC";
+		
+		let data = {"user": user, "mode": "facebook"};
+		BL.save(soajs_subtenant, data, modelUserObj, (error, record) => {
+			assert.equal(record.firstName, "mateo2");
+			assert.equal(record.config.allowedTenants.length, 2);
+			assert.ok(record);
+			done();
+		});
+	});
 
     it("test - find - username", function (done) {
         let data = {

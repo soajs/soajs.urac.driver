@@ -14,6 +14,8 @@ const coreModule = require("soajs.core.modules");
 const soajsValidator = coreModule.core.validator;
 const driverConfig = require('./config.js');
 
+let model = process.env.SOAJS_SERVICE_MODEL || "mongo";
+
 let BL = {
 	user: require("./lib/user.js"),
 	group: require("./lib/group.js"),
@@ -292,15 +294,11 @@ function initBLModel(soajs, cb) {
 	if (driver.modelInit) {
 		return cb(null);
 	}
-	let modelName = driverConfig.model;
-	if (soajs.servicesConfig && soajs.servicesConfig.urac && soajs.servicesConfig.urac.model) {
-		modelName = soajs.servicesConfig.urac.model;
-	}
-	let userModel = __dirname + "/model/" + modelName + "/user.js";
+	let userModel = __dirname + "/model/" + model + "/user.js";
 	if (fs.existsSync(userModel)) {
 		SSOT.user = require(userModel);
 	}
-	let groupModel = __dirname + "/model/" + modelName + "/group.js";
+	let groupModel = __dirname + "/model/" + model + "/group.js";
 	if (fs.existsSync(groupModel)) {
 		SSOT.group = require(groupModel);
 	}
