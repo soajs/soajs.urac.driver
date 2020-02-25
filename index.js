@@ -276,8 +276,46 @@ let driver = {
 			}
 			let modelUserObj = new SSOT.user(soajs);
 			BL.user.save(soajs, input, modelUserObj, (error, record) => {
+				
+				
+				let userTenant = BL.common.checkUserTenantAccess(record, soajs.tenant);
+				if (!userTenant) {
+					modelUserObj.closeConnection();
+					return cb({"code": 403, "msg": driverConfig.errors[403]});
+				}
+				if (userTenant.groups && Array.isArray(userTenant.groups) && userTenant.groups.length !== 0) {
+					record.groups = userTenant.groups;
+					record.tenant = userTenant.tenant;
+					//Get Groups config
+					let modelGroupObj = new SSOT.group(soajs);
+					let data = {
+						"groups": record.groups
+					};
+					BL.group.find(soajs, data, modelGroupObj, function (error, groups) {
+						modelGroupObj.closeConnection();
+						if (error) {
+							modelUserObj.closeConnection();
+							return cb(error);
+						}
+						if (groups && Array.isArray(groups) && groups.length !== 0) {
+							record.groupsConfig = groups;
+						}
+						returnUser(record);
+					});
+				} else {
+					returnUser(record);
+				}
+				
+				function returnUser(record) {
+					modelUserObj.closeConnection();
+					BL.user.assureConfig(record);
+					return cb(null, record);
+				}
+				
+				/*
 				modelUserObj.closeConnection();
 				return cb(error, record);
+				*/
 			});
 		});
 	}
