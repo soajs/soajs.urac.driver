@@ -53,7 +53,7 @@ let driver = {
 				}
 				delete record.password;
 				delete record.socialId;
-				let userTenant = BL.common.checkUserTenantAccess(record, soajs.tenant);
+				let userTenant = BL.common.checkUserTenantAccess(record, soajs.tenant, soajs.log);
 				if (!userTenant) {
 					modelUserObj.closeConnection();
 					return cb({"code": 403, "msg": driverConfig.errors[403]});
@@ -138,7 +138,7 @@ let driver = {
 					}
 					delete record.password;
 					delete record.socialId;
-					let userTenant = BL.common.checkUserTenantAccess(record, soajs.tenant);
+					let userTenant = BL.common.checkUserTenantAccess(record, soajs.tenant, soajs.log);
 					if (!userTenant) {
 						modelUserObj.closeConnection();
 						return cb({"code": 403, "msg": driverConfig.errors[403]});
@@ -224,7 +224,7 @@ let driver = {
 						return cb({"code": 403, "msg": driverConfig.errors[403]});
 					}
 					delete record.password;
-					let userTenant = BL.common.checkUserTenantAccess(record, soajs.tenant);
+					let userTenant = BL.common.checkUserTenantAccess(record, soajs.tenant, soajs.log);
 					if (!userTenant) {
 						modelUserObj.closeConnection();
 						return cb({"code": 403, "msg": driverConfig.errors[403]});
@@ -278,7 +278,7 @@ let driver = {
 			BL.user.save(soajs, input, modelUserObj, (error, record) => {
 				
 				
-				let userTenant = BL.common.checkUserTenantAccess(record, soajs.tenant);
+				let userTenant = BL.common.checkUserTenantAccess(record, soajs.tenant, soajs.log);
 				if (!userTenant) {
 					modelUserObj.closeConnection();
 					return cb({"code": 403, "msg": driverConfig.errors[403]});

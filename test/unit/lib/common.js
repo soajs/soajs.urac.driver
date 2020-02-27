@@ -132,5 +132,52 @@ describe("Unit test for: lib - common", function () {
         assert.equal(response.tenant.id, "THYME_tID");
         done();
     });
-
+	it("test - checkUserTenantAccess - sub tenant NOT THERE", function (done) {
+		let record = {
+			username: "toni",
+			tenant: {
+				id: "5c0e74ba9acc3c5a84a51259",
+				code: "TES0",
+				pin: {
+					code: "1235",
+					allowed: true
+				}
+			},
+			groups: [
+				"owner", "devop"
+			],
+			config: {
+				allowedTenants: [
+					{
+						tenant: {
+							id: "THYME_tID",
+							code: "THYME_CODE",
+							pin: {
+								code: "5678",
+								allowed: true
+							}
+						},
+						groups: [
+							"waiter"
+						]
+					},
+					{
+						tenant: {
+							id: "ELVIRA_tID",
+							code: "ELVIRA_CODE"
+						},
+						groups: [
+							"manager"
+						]
+					}
+				]
+			}
+		};
+		let tenantObj = {
+			id: "NO_THERE"
+		};
+		let response = BL.checkUserTenantAccess(record, tenantObj, {"error":(msg)=>{console.log(msg)}});
+		assert.equal(response, null);
+		done();
+	});
 });
