@@ -176,7 +176,7 @@ describe("Unit test for: lib - common", function () {
 		let tenantObj = {
 			id: "NO_THERE"
 		};
-		let response = BL.checkUserTenantAccess(record, tenantObj, {"error":(msg)=>{console.log(msg)}});
+		let response = BL.checkUserTenantAccess(record, tenantObj, {"error":(msg)=>{console.log(msg);}});
 		assert.equal(response, null);
 		done();
 	});
