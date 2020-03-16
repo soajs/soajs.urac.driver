@@ -38,12 +38,15 @@ function User(soajs, mongoCore) {
 		__self.mongoCore = new Mongo(soajs.meta.tenantDB(tenantMetaDB, "urac", tCode));
 		if (indexing && tId && !indexing[tId]) {
 			indexing[tId] = true;
+			
 			__self.mongoCore.createIndex(colName, {"username": 1}, {unique: true}, (err, index) => {
 				soajs.log.debug("Index: " + index + " created with error: " + err);
 			});
+			
 			__self.mongoCore.createIndex(colName, {"email": 1}, {unique: true}, (err, index) => {
 				soajs.log.debug("Index: " + index + " created with error: " + err);
 			});
+			
 			__self.mongoCore.createIndex(colName,
 				{
 					"config.allowedTenants.tenant.pin.code": 1,
@@ -59,6 +62,7 @@ function User(soajs, mongoCore) {
 				}, (err, index) => {
 					soajs.log.debug("Index: " + index + " created with error: " + err);
 				});
+			
 			__self.mongoCore.createIndex(colName,
 				{
 					"tenant.pin.code": 1,
@@ -74,8 +78,14 @@ function User(soajs, mongoCore) {
 				}, (err, index) => {
 					soajs.log.debug("Index: " + index + " created with error: " + err);
 				});
-			//TODO: missing index for socialId.facebook.id
 			
+			//TODO: missing index for socialId.facebook.id
+			// only if mongo is 4.3
+			/*
+			__self.mongoCore.createIndex( colName, {"socialId.$**" : 1}, {}, (err, index) => {
+				soajs.log.debug("Index: " + index + " created with error: " + err);
+			});
+			*/
 			soajs.log.debug("Indexes @ " + colName + " for " + tCode + "_urac Updated!");
 		}
 	}
