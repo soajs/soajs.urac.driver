@@ -171,7 +171,7 @@ User.prototype.getSocialNetworkUser = function (data, cb) {
 	else {
 		condition = c;
 	}
-	__self.mongoCore.findOne(colName, condition, null, null, (err, record) => {
+	__self.mongoCore.findOne(colName, condition, null, (err, record) => {
 		return cb(err, record);
 	});
 };
@@ -243,7 +243,7 @@ User.prototype.getUserByEmail = function (data, cb) {
 	let condition = {
 		'email': data.email
 	};
-	__self.mongoCore.findOne(colName, condition, null, null, (err, records) => {
+	__self.mongoCore.findOne(colName, condition, null, (err, records) => {
 		return cb(err, records);
 	});
 };
@@ -269,7 +269,7 @@ User.prototype.getUserByUsernameOrId = function (data, cb) {
 	} else if (data.username) {
 		condition = {'username': data.username};
 	}
-	__self.mongoCore.findOne(colName, condition, null, null, (err, record) => {
+	__self.mongoCore.findOne(colName, condition, null, (err, record) => {
 		return cb(err, record);
 	});
 };
@@ -296,7 +296,7 @@ User.prototype.getUserByPin = function (data, cb) {
 			{"config.allowedTenants": {"$elemMatch": {$and: [{'tenant.pin.code': data.pin}, {'tenant.id': data.tId}]}}}
 		]
 	};
-	__self.mongoCore.findOne(colName, condition, null, null, (err, record) => {
+	__self.mongoCore.findOne(colName, condition, null, (err, record) => {
 		return cb(err, record);
 	});
 };

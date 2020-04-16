@@ -81,7 +81,7 @@ Group.prototype.getGroups = function (data, cb) {
             "$in": data.groups
         }
     };
-    __self.mongoCore.find(colName, condition, null, null, (err, records) => {
+    __self.mongoCore.find(colName, condition, null, (err, records) => {
         return cb(err, records);
     });
 };
