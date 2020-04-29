@@ -132,7 +132,9 @@ let driver = {
 				}
 				BL.common.comparePasswd(soajs.servicesConfig, input.password, record.password, myConfig, (err, response) => {
 					if (err || !response) {
-						soajs.log.error(err.message);
+						if (err) {
+							soajs.log.error(err.message);
+						}
 						modelUserObj.closeConnection();
 						return cb({"code": 402, "msg": driverConfig.errors[402]});
 					}
