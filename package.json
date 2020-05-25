@@ -31,6 +31,6 @@
     "shelljs": "0.8.3"
   },
   "dependencies": {
-    "soajs.core.modules": "5.0.0"
+    "soajs.core.modules": "5.0.1"
   }
 }
