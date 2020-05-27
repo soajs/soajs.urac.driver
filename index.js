@@ -10,6 +10,8 @@
 
 const fs = require("fs");
 
+const get = (p, o) => p.reduce((xs, x) => (xs && xs[x]) ? xs[x] : null, o);
+
 const coreModule = require("soajs.core.modules");
 const soajsValidator = coreModule.core.validator;
 const driverConfig = require('./config.js');
@@ -130,7 +132,26 @@ let driver = {
 				if (soajs.config) {
 					myConfig = soajs.config;
 				}
-				BL.common.comparePasswd(soajs.servicesConfig, input.password, record.password, myConfig, (err, response) => {
+				
+				let encryptionConfig = {};
+				if (soajs.servicesConfig.hashIterations) {
+					encryptionConfig.hashIterations = soajs.servicesConfig.hashIterations;
+				} else {
+					let hashIterations = get(["registry", "custom", "urac", "value", "hashIterations"], soajs);
+					if (hashIterations) {
+						encryptionConfig.hashIterations = hashIterations;
+					}
+				}
+				if (soajs.servicesConfig.optionalAlgorithm) {
+					encryptionConfig.optionalAlgorithm = soajs.servicesConfig.optionalAlgorithm;
+				} else {
+					let optionalAlgorithm = get(["registry", "custom", "urac", "value", "optionalAlgorithm"], soajs);
+					if (optionalAlgorithm) {
+						encryptionConfig.optionalAlgorithm = optionalAlgorithm;
+					}
+				}
+				
+				BL.common.comparePasswd(encryptionConfig, input.password, record.password, myConfig, (err, response) => {
 					if (err || !response) {
 						if (err) {
 							soajs.log.error(err.message);
