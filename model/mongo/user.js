@@ -32,10 +32,19 @@ function User(soajs, mongoCore) {
 				tenantMetaDB = soajs.tenant.roaming.tenantMetaDB;
 			}
 		} else {
-			let dbCode = get(["registry", "custom", "urac", "value", "dbCode"], soajs);
-			if (dbCode) {
-				tCode = dbCode;
-			} else if (soajs.tenant.main && soajs.tenant.main.code) {
+			let dbCodeFound = false;
+			let dbCodes = get(["registry", "custom", "urac", "value", "dbCodes"], soajs);
+			if (dbCodes) {
+				for (let c in dbCodes) {
+					if (dbCodes.hasOwnProperty(c)) {
+						if (dbCodes[c].includes(soajs.tenant.code)) {
+							tCode = c;
+							break;
+						}
+					}
+				}
+			}
+			if (!dbCodeFound && soajs.tenant.main && soajs.tenant.main.code) {
 				tCode = soajs.tenant.main.code;
 			}
 		}
