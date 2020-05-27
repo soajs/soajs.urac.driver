@@ -39,6 +39,7 @@ function User(soajs, mongoCore) {
 					if (dbCodes.hasOwnProperty(c)) {
 						if (dbCodes[c].includes(soajs.tenant.code)) {
 							tCode = c;
+							dbCodeFound = true;
 							break;
 						}
 					}
