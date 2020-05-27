@@ -8,6 +8,8 @@
  * found in the LICENSE file at the root of this repository
  */
 
+const get = (p, o) => p.reduce((xs, x) => (xs && xs[x]) ? xs[x] : null, o);
+
 const colName = "users";
 const core = require("soajs.core.modules");
 const Mongo = core.mongo;
@@ -22,22 +24,24 @@ function User(soajs, mongoCore) {
 	if (!__self.mongoCore) {
 		let tCode = soajs.tenant.code;
 		let tenantMetaDB = soajs.registry.tenantMetaDB;
-		let tId = soajs.tenant.id;
 		if (soajs.tenant.roaming) {
 			if (soajs.tenant.roaming.code) {
 				tCode = soajs.tenant.roaming.code;
-				tId = soajs.tenant.roaming.id;
 			}
 			if (soajs.tenant.roaming.tenantMetaDB) {
 				tenantMetaDB = soajs.tenant.roaming.tenantMetaDB;
 			}
-		} else if (soajs.tenant.main && soajs.tenant.main.code) {
-			tCode = soajs.tenant.main.code;
-			tId = soajs.tenant.main.id;
+		} else {
+			let dbCode = get(["registry", "custom", "urac", "value", "dbCode"], soajs);
+			if (dbCode) {
+				tCode = dbCode;
+			} else if (soajs.tenant.main && soajs.tenant.main.code) {
+				tCode = soajs.tenant.main.code;
+			}
 		}
 		__self.mongoCore = new Mongo(soajs.meta.tenantDB(tenantMetaDB, "urac", tCode));
-		if (indexing && tId && !indexing[tId]) {
-			indexing[tId] = true;
+		if (indexing && tCode && !indexing[tCode]) {
+			indexing[tCode] = true;
 			
 			__self.mongoCore.createIndex(colName, {"username": 1}, {unique: true}, (err, index) => {
 				soajs.log.debug("Index: " + index + " created with error: " + err);
