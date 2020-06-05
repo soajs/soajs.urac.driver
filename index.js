@@ -12,8 +12,6 @@ const fs = require("fs");
 
 const get = (p, o) => p.reduce((xs, x) => (xs && xs[x]) ? xs[x] : null, o);
 
-const coreModule = require("soajs.core.modules");
-const soajsValidator = coreModule.core.validator;
 const driverConfig = require('./config.js');
 
 let model = process.env.SOAJS_SERVICE_MODEL || "mongo";
@@ -110,7 +108,8 @@ let driver = {
 			}
 			let modelUserObj = new SSOT.user(soajs);
 			let data = {};
-			let pattern = soajsValidator.SchemaPatterns.email;
+			let pattern = /^(?:[\w!#$%&'*+\-\/=?^`{|}~]+\.)*[\w!#$%&'*+\-\/=?^`{|}~]+@(?:(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9\-](?!\.)){0,61}[a-zA-Z0-9]?\.)+[a-zA-Z0-9](?:[a-zA-Z0-9\-](?!$)){0,61}[a-zA-Z0-9]?)|(?:\[(?:(?:[01]?\d{1,2}|2[0-4]\d|25[0-5])\.){3}(?:[01]?\d{1,2}|2[0-4]\d|25[0-5])]))$/;
+			
 			if (!input || !input.username) {
 				return cb({"code": 403, "msg": driverConfig.errors[403]});
 			}
