@@ -22,11 +22,9 @@ function Group(soajs, mongoCore) {
 	if (!__self.mongoCore) {
 		let tCode = soajs.tenant.code;
 		let tenantMetaDB = soajs.registry.tenantMetaDB;
-		let tId = soajs.tenant.id;
 		if (soajs.tenant.roaming) {
 			if (soajs.tenant.roaming.code) {
 				tCode = soajs.tenant.roaming.code;
-				tId = soajs.tenant.roaming.id;
 			}
 			if (soajs.tenant.roaming.tenantMetaDB) {
 				tenantMetaDB = soajs.tenant.roaming.tenantMetaDB;
