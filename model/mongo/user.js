@@ -32,21 +32,19 @@ function User(soajs, mongoCore) {
 				tenantMetaDB = soajs.tenant.roaming.tenantMetaDB;
 			}
 		} else {
-			let dbCodeFound = false;
+			if (soajs.tenant.main && soajs.tenant.main.code) {
+				tCode = soajs.tenant.main.code;
+			}
 			let dbCodes = get(["registry", "custom", "urac", "value", "dbCodes"], soajs);
 			if (dbCodes) {
 				for (let c in dbCodes) {
 					if (dbCodes.hasOwnProperty(c)) {
-						if (dbCodes[c].includes(soajs.tenant.code)) {
+						if (dbCodes[c].includes(tCode)) {
 							tCode = c;
-							dbCodeFound = true;
 							break;
 						}
 					}
 				}
-			}
-			if (!dbCodeFound && soajs.tenant.main && soajs.tenant.main.code) {
-				tCode = soajs.tenant.main.code;
 			}
 		}
 		__self.mongoCore = new Mongo(soajs.meta.tenantDB(tenantMetaDB, "urac", tCode));
