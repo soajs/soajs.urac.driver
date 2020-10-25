@@ -88,8 +88,9 @@ let driver = {
 					BL.user.lastLogin(soajs, data, modelUserObj, () => {
 						modelUserObj.closeConnection();
 					});
-					BL.user.assureConfig(record);
-					return cb(null, record);
+					BL.user.assureConfig(record, (error, record) => {
+						return cb(null, record);
+					});
 				}
 			});
 		});
@@ -195,8 +196,9 @@ let driver = {
 						BL.user.lastLogin(soajs, data, modelUserObj, () => {
 							modelUserObj.closeConnection();
 						});
-						BL.user.assureConfig(record);
-						return cb(null, record);
+						BL.user.assureConfig(record, (error, record) => {
+							return cb(null, record);
+						});
 					}
 				});
 			});
@@ -276,8 +278,9 @@ let driver = {
 					
 					function returnUser(record) {
 						modelUserObj.closeConnection();
-						BL.user.assureConfig(record);
-						return cb(null, record);
+						BL.user.assureConfig(record, (error, record) => {
+							return cb(null, record);
+						});
 					}
 				});
 			}
@@ -303,8 +306,9 @@ let driver = {
 					
 					let returnUser = (record) => {
 						modelUserObj.closeConnection();
-						BL.user.assureConfig(record);
-						return cb(null, record);
+						BL.user.assureConfig(record, (error, record) => {
+							return cb(null, record);
+						});
 					};
 					
 					let userTenant = BL.common.checkUserTenantAccess(record, soajs.tenant, soajs.log);
