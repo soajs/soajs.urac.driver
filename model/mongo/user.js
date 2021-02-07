@@ -18,6 +18,7 @@ let indexing = {};
 
 function User(soajs, mongoCore) {
 	let __self = this;
+	__self.keepConnectionAlive = false;
 	if (mongoCore) {
 		__self.mongoCore = mongoCore;
 	}
@@ -35,13 +36,19 @@ function User(soajs, mongoCore) {
 			if (soajs.tenant.main && soajs.tenant.main.code) {
 				tCode = soajs.tenant.main.code;
 			}
-			let dbCodes = get(["registry", "custom", "urac", "value", "dbCodes"], soajs);
-			if (dbCodes) {
-				for (let c in dbCodes) {
-					if (dbCodes.hasOwnProperty(c)) {
-						if (dbCodes[c].includes(tCode)) {
-							tCode = c;
-							break;
+			let masterCode = get(["registry", "custom", "urac", "value", "masterCode"], soajs);
+			if (masterCode) {
+				tCode = masterCode;
+				__self.keepConnectionAlive = true;
+			} else {
+				let dbCodes = get(["registry", "custom", "urac", "value", "dbCodes"], soajs);
+				if (dbCodes) {
+					for (let c in dbCodes) {
+						if (dbCodes.hasOwnProperty(c)) {
+							if (dbCodes[c].includes(tCode)) {
+								tCode = c;
+								break;
+							}
 						}
 					}
 				}
@@ -179,8 +186,7 @@ User.prototype.getSocialNetworkUser = function (data, cb) {
 		condition = {
 			$or: [c, e]
 		};
-	}
-	else {
+	} else {
 		condition = c;
 	}
 	__self.mongoCore.findOne(colName, condition, null, (err, record) => {
@@ -319,8 +325,9 @@ User.prototype.getUserByPin = function (data, cb) {
  */
 User.prototype.closeConnection = function () {
 	let __self = this;
-	
-	__self.mongoCore.closeDb();
+	if (!__self.keepConnectionAlive) {
+		__self.mongoCore.closeDb();
+	}
 };
 
 module.exports = User;
