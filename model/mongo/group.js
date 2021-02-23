@@ -43,6 +43,18 @@ function Group(soajs, mongoCore) {
 			if (masterCode) {
 				tCode = masterCode;
 				__self.keepConnectionAlive = true;
+			} else {
+				let dbCodes = get(["registry", "custom", "urac", "value", "dbCodes"], soajs);
+				if (dbCodes) {
+					for (let c in dbCodes) {
+						if (dbCodes.hasOwnProperty(c)) {
+							if (dbCodes[c].includes(tCode)) {
+								tCode = c;
+								break;
+							}
+						}
+					}
+				}
 			}
 		}
 		__self.mongoCore = new Mongo(soajs.meta.tenantDB(tenantMetaDB, "urac", tCode));
