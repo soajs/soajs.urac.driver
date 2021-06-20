@@ -41,7 +41,12 @@ let driver = {
 			if (!input || !input.pin) {
 				return cb({"code": 403, "msg": driverConfig.errors[403]});
 			}
-			let modelUserObj = new SSOT.user(soajs);
+			let modelUserObj = null;
+			if (SSOT.userModelObj) {
+				modelUserObj = SSOT.userModelObj;
+			} else {
+				modelUserObj = new SSOT.user(soajs);
+			}
 			BL.user.find(soajs, {"pin": input.pin, "tId": soajs.tenant.id}, modelUserObj, (error, record) => {
 				if (error) {
 					modelUserObj.closeConnection();
@@ -63,7 +68,13 @@ let driver = {
 					record.groups = userTenant.groups;
 					record.tenant = userTenant.tenant;
 					//Get Groups config
-					let modelGroupObj = new SSOT.group(soajs);
+					// let modelGroupObj = new SSOT.group(soajs);
+					let modelGroupObj = null;
+					if (SSOT.groupModelObj) {
+						modelGroupObj = SSOT.groupModelObj;
+					} else {
+						modelGroupObj = new SSOT.group(soajs);
+					}
 					let data = {
 						"groups": record.groups
 					};
@@ -108,7 +119,13 @@ let driver = {
 			if (error) {
 				return cb(error);
 			}
-			let modelUserObj = new SSOT.user(soajs);
+			// let modelUserObj = new SSOT.user(soajs);
+			let modelUserObj = null;
+			if (SSOT.userModelObj) {
+				modelUserObj = SSOT.userModelObj;
+			} else {
+				modelUserObj = new SSOT.user(soajs);
+			}
 			let data = {};
 			let pattern = /^(?:[\w!#$%&'*+\-\/=?^`{|}~]+\.)*[\w!#$%&'*+\-\/=?^`{|}~]+@(?:(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9\-](?!\.)){0,61}[a-zA-Z0-9]?\.)+[a-zA-Z0-9](?:[a-zA-Z0-9\-](?!$)){0,61}[a-zA-Z0-9]?)|(?:\[(?:(?:[01]?\d{1,2}|2[0-4]\d|25[0-5])\.){3}(?:[01]?\d{1,2}|2[0-4]\d|25[0-5])]))$/;
 			
@@ -172,7 +189,13 @@ let driver = {
 						record.groups = userTenant.groups;
 						record.tenant = userTenant.tenant;
 						//Get Groups config
-						let modelGroupObj = new SSOT.group(soajs);
+						// let modelGroupObj = new SSOT.group(soajs);
+						let modelGroupObj = null;
+						if (SSOT.groupModelObj) {
+							modelGroupObj = SSOT.groupModelObj;
+						} else {
+							modelGroupObj = new SSOT.group(soajs);
+						}
 						let data = {
 							"groups": record.groups
 						};
@@ -219,7 +242,13 @@ let driver = {
 			if (error) {
 				return cb(error);
 			}
-			let modelUserObj = new SSOT.user(soajs);
+			// let modelUserObj = new SSOT.user(soajs);
+			let modelUserObj = null;
+			if (SSOT.userModelObj) {
+				modelUserObj = SSOT.userModelObj;
+			} else {
+				modelUserObj = new SSOT.user(soajs);
+			}
 			let data = {};
 			if (input.username) {
 				data.username = input.username;
@@ -260,7 +289,13 @@ let driver = {
 						record.groups = userTenant.groups;
 						record.tenant = userTenant.tenant;
 						//Get Groups config
-						let modelGroupObj = new SSOT.group(soajs);
+						// let modelGroupObj = new SSOT.group(soajs);
+						let modelGroupObj = null;
+						if (SSOT.groupModelObj) {
+							modelGroupObj = SSOT.groupModelObj;
+						} else {
+							modelGroupObj = new SSOT.group(soajs);
+						}
 						let data = {
 							"groups": record.groups
 						};
@@ -302,7 +337,13 @@ let driver = {
 			if (error) {
 				return cb(error);
 			}
-			let modelUserObj = new SSOT.user(soajs);
+			// let modelUserObj = new SSOT.user(soajs);
+			let modelUserObj = null;
+			if (SSOT.userModelObj) {
+				modelUserObj = SSOT.userModelObj;
+			} else {
+				modelUserObj = new SSOT.user(soajs);
+			}
 			BL.user.save(soajs, input, modelUserObj, (error, record) => {
 				
 				if (record && record.status === "active") {
@@ -324,7 +365,13 @@ let driver = {
 						record.groups = userTenant.groups;
 						record.tenant = userTenant.tenant;
 						//Get Groups config
-						let modelGroupObj = new SSOT.group(soajs);
+						// let modelGroupObj = new SSOT.group(soajs);
+						let modelGroupObj = null;
+						if (SSOT.groupModelObj) {
+							modelGroupObj = SSOT.groupModelObj;
+						} else {
+							modelGroupObj = new SSOT.group(soajs);
+						}
 						let data = {
 							"groups": record.groups
 						};
@@ -376,13 +423,22 @@ function initBLModel(soajs, cb) {
 	if (driver.modelInit) {
 		return cb(null);
 	}
+	
+	let masterCode = get(["registry", "custom", "urac", "value", "masterCode"], soajs);
+	
 	let userModel = __dirname + "/model/" + model + "/user.js";
 	if (fs.existsSync(userModel)) {
 		SSOT.user = require(userModel);
+		if (masterCode) {
+			SSOT.userModelObj = new SSOT.user(soajs);
+		}
 	}
 	let groupModel = __dirname + "/model/" + model + "/group.js";
 	if (fs.existsSync(groupModel)) {
 		SSOT.group = require(groupModel);
+		if (masterCode) {
+			SSOT.groupModelObj = new SSOT.group(soajs);
+		}
 	}
 	if (SSOT.user && SSOT.group) {
 		driver.modelInit = true;

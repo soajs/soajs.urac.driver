@@ -238,7 +238,7 @@ User.prototype.insertSocialNetworkUser = function (data, cb) {
 		return cb(error, null);
 	}
 	
-	__self.mongoCore.insert(colName, data, (err, record) => {
+	__self.mongoCore.insertOne(colName, data, {}, false,(err, record)=>{
 		return cb(err, record);
 	});
 };
