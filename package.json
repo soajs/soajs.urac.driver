@@ -32,6 +32,6 @@
   },
   "dependencies": {
     "async": "3.2.0",
-    "soajs.core.modules": "5.0.14"
+    "soajs.core.modules": "https://github.com/soajs/soajs.core.modules.git"
   }
 }
