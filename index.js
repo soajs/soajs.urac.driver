@@ -429,16 +429,18 @@ function initBLModel(soajs, cb) {
 	let userModel = __dirname + "/model/" + model + "/user.js";
 	if (fs.existsSync(userModel)) {
 		SSOT.user = require(userModel);
-		if (masterCode) {
-			SSOT.userModelObj = new SSOT.user(soajs);
-		}
+		SSOT.userModelObj = null;
+		// if (masterCode) {
+		// 	SSOT.userModelObj = new SSOT.user(soajs);
+		// }
 	}
 	let groupModel = __dirname + "/model/" + model + "/group.js";
 	if (fs.existsSync(groupModel)) {
 		SSOT.group = require(groupModel);
-		if (masterCode) {
-			SSOT.groupModelObj = new SSOT.group(soajs);
-		}
+		SSOT.groupModelObj = null;
+		// if (masterCode) {
+		// 	SSOT.groupModelObj = new SSOT.group(soajs);
+		// }
 	}
 	if (SSOT.user && SSOT.group) {
 		driver.modelInit = true;
