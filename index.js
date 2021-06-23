@@ -424,7 +424,7 @@ function initBLModel(soajs, cb) {
 		return cb(null);
 	}
 	
-	let masterCode = get(["registry", "custom", "urac", "value", "masterCode"], soajs);
+	// let masterCode = get(["registry", "custom", "urac", "value", "masterCode"], soajs);
 	
 	let userModel = __dirname + "/model/" + model + "/user.js";
 	if (fs.existsSync(userModel)) {
