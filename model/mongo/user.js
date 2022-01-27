@@ -24,37 +24,49 @@ function User(soajs, mongoCore) {
 	}
 	if (!__self.mongoCore) {
 		let tCode = soajs.tenant.code;
-		let tenantMetaDB = soajs.registry.tenantMetaDB;
-		if (soajs.tenant.roaming) {
-			if (soajs.tenant.roaming.code) {
-				tCode = soajs.tenant.roaming.code;
+		
+		let masterDB = get(["registry", "custom", "urac", "value", "masterDB"], soajs);
+		if (masterDB) {
+			if (!soajs.registry.coreDB[masterDB]) {
+				soajs.log.error("Group: Unable to find [" + masterDB + "] db configuration under registry.");
 			}
-			if (soajs.tenant.roaming.tenantMetaDB) {
-				tenantMetaDB = soajs.tenant.roaming.tenantMetaDB;
-			}
+			tCode = masterDB;
+			__self.mongoCore = new Mongo(soajs.registry.coreDB[masterDB]);
 		} else {
-			if (soajs.tenant.main && soajs.tenant.main.code) {
-				tCode = soajs.tenant.main.code;
-			}
-			let masterCode = get(["registry", "custom", "urac", "value", "masterCode"], soajs);
-			if (masterCode) {
-				tCode = masterCode;
-				__self.keepConnectionAlive = true;
+			let tenantMetaDB = soajs.registry.tenantMetaDB;
+			if (soajs.tenant.roaming) {
+				if (soajs.tenant.roaming.code) {
+					tCode = soajs.tenant.roaming.code;
+				}
+				if (soajs.tenant.roaming.tenantMetaDB) {
+					tenantMetaDB = soajs.tenant.roaming.tenantMetaDB;
+				}
 			} else {
-				let dbCodes = get(["registry", "custom", "urac", "value", "dbCodes"], soajs);
-				if (dbCodes) {
-					for (let c in dbCodes) {
-						if (dbCodes.hasOwnProperty(c)) {
-							if (dbCodes[c].includes(tCode)) {
-								tCode = c;
-								break;
+				if (soajs.tenant.main && soajs.tenant.main.code) {
+					tCode = soajs.tenant.main.code;
+				}
+				
+				let masterCode = get(["registry", "custom", "urac", "value", "masterCode"], soajs);
+				if (masterCode) {
+					tCode = masterCode;
+					__self.keepConnectionAlive = true;
+				} else {
+					let dbCodes = get(["registry", "custom", "urac", "value", "dbCodes"], soajs);
+					if (dbCodes) {
+						for (let c in dbCodes) {
+							if (dbCodes.hasOwnProperty(c)) {
+								if (dbCodes[c].includes(tCode)) {
+									tCode = c;
+									break;
+								}
 							}
 						}
 					}
 				}
 			}
+			__self.mongoCore = new Mongo(soajs.meta.tenantDB(tenantMetaDB, "urac", tCode));
 		}
-		__self.mongoCore = new Mongo(soajs.meta.tenantDB(tenantMetaDB, "urac", tCode));
+		
 		if (indexing && tCode && !indexing[tCode]) {
 			indexing[tCode] = true;
 			
@@ -238,7 +250,7 @@ User.prototype.insertSocialNetworkUser = function (data, cb) {
 		return cb(error, null);
 	}
 	
-	__self.mongoCore.insertOne(colName, data, {}, false,(err, record)=>{
+	__self.mongoCore.insertOne(colName, data, {}, false, (err, record) => {
 		return cb(err, record);
 	});
 };
