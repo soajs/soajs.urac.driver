@@ -28,7 +28,7 @@ function User(soajs, mongoCore) {
 		let masterDB = get(["registry", "custom", "urac", "value", "masterDB"], soajs);
 		if (masterDB) {
 			if (!soajs.registry.coreDB[masterDB]) {
-				soajs.log.error("Group: Unable to find [" + masterDB + "] db configuration under registry.");
+				soajs.log.error("User: Unable to find [" + masterDB + "] db configuration under registry.");
 			}
 			tCode = masterDB;
 			__self.mongoCore = new Mongo(soajs.registry.coreDB[masterDB]);
