@@ -390,7 +390,7 @@ let driver = {
 						returnUser(record);
 					}
 					
-				} else if (record && (record.status === "pendingNew" || record.status === "pendingJoin")) {
+				} else if (record && record.status.indexOf("pending") !== -1) {
 					modelUserObj.closeConnection();
 					soajs.log.error("User [" + record.username + "] status is " + record.status);
 					return cb({"code": 405, "msg": driverConfig.errors[405]});
