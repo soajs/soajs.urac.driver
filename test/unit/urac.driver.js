@@ -97,7 +97,7 @@ describe("Unit test for: urac.driver", function () {
 			done();
 		});
 	});
-	
+
 	it.skip("test - login - error model", function (done) {
 		soajs.tenant = {
 			"code": "TES0",
@@ -146,7 +146,17 @@ describe("Unit test for: urac.driver", function () {
 			done();
 		});
 	});
-	
+
+	it("test - getRecord - phone", function (done) {
+		let input = {
+			"phone": "16179010000"
+		};
+		driver.getRecord(soajs, input, (error, record) => {
+			assert.equal(record.email, 'me@localhost.com');
+			id = record._id.toString();
+			done();
+		});
+	});
 	it("test - getRecord - username", function (done) {
 		let input = {
 			"username": "owner"
@@ -185,7 +195,7 @@ describe("Unit test for: urac.driver", function () {
 			done();
 		});
 	});
-	
+
 	it("test - save user", function (done) {
 		let user = {
 			"firstName": "mathieu",
@@ -197,8 +207,8 @@ describe("Unit test for: urac.driver", function () {
 			"accessToken": "44a5399dcce96325fadfab908e614bf00e6fe967",
 			"refreshToken": "ddfd5eb42417b480471b4cec06381244658ffc7a"
 		};
-		let input = {"user": user, "mode": "facebook"};
-		
+		let input = { "user": user, "mode": "facebook" };
+
 		driver.saveUser(soajs, input, (error, response) => {
 			assert.equal(response.username, "11111111111");
 			done();

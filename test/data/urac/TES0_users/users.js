@@ -6,6 +6,7 @@ let records = [
         firstName: "owner3",
         lastName: "owner",
         email: "me@localhost.com",
+        phone: "16179010000",
         ts: 1552747600152,
         status: "active",
         profile: {},
