@@ -14,8 +14,6 @@ const colName = "users";
 const core = require("soajs.core.modules");
 const Mongo = core.mongo;
 
-let indexing = {};
-
 function User(soajs, mongoCore) {
 	let __self = this;
 	__self.keepConnectionAlive = false;
@@ -24,7 +22,7 @@ function User(soajs, mongoCore) {
 	}
 	if (!__self.mongoCore) {
 		let tCode = soajs.tenant.code;
-		
+
 		let masterDB = get(["registry", "custom", "urac", "value", "masterDB"], soajs);
 		if (masterDB) {
 			if (!soajs.registry.coreDB[masterDB]) {
@@ -45,7 +43,7 @@ function User(soajs, mongoCore) {
 				if (soajs.tenant.main && soajs.tenant.main.code) {
 					tCode = soajs.tenant.main.code;
 				}
-				
+
 				let masterCode = get(["registry", "custom", "urac", "value", "masterCode"], soajs);
 				if (masterCode) {
 					tCode = masterCode;
@@ -66,59 +64,16 @@ function User(soajs, mongoCore) {
 			}
 			__self.mongoCore = new Mongo(soajs.meta.tenantDB(tenantMetaDB, "urac", tCode));
 		}
-		
-		if (indexing && tCode && !indexing[tCode]) {
-			indexing[tCode] = true;
-			
-			__self.mongoCore.createIndex(colName, {"username": 1}, {unique: true}, (err, index) => {
-				soajs.log.debug("Index: " + index + " created with error: " + err);
-			});
-			
-			__self.mongoCore.createIndex(colName, {"email": 1}, {unique: true}, (err, index) => {
-				soajs.log.debug("Index: " + index + " created with error: " + err);
-			});
-			
-			__self.mongoCore.createIndex(colName,
-				{
-					"config.allowedTenants.tenant.pin.code": 1,
-					"config.allowedTenants.tenant.id": 1
-				},
-				{
-					unique: true,
-					partialFilterExpression: {
-						"config.allowedTenants.tenant.pin.code": {
-							"$exists": true
-						}
-					}
-				}, (err, index) => {
-					soajs.log.debug("Index: " + index + " created with error: " + err);
-				});
-			
-			__self.mongoCore.createIndex(colName,
-				{
-					"tenant.pin.code": 1,
-					"tenant.id": 1
-				},
-				{
-					unique: true,
-					partialFilterExpression: {
-						"tenant.pin.code": {
-							"$exists": true
-						}
-					}
-				}, (err, index) => {
-					soajs.log.debug("Index: " + index + " created with error: " + err);
-				});
-			
-			//TODO: missing index for socialId.facebook.id
-			// only if mongo is 4.3
-			/*
-			__self.mongoCore.createIndex( colName, {"socialId.$**" : 1}, {}, (err, index) => {
-				soajs.log.debug("Index: " + index + " created with error: " + err);
-			});
-			*/
-			soajs.log.debug("Indexes @ " + colName + " for " + tCode + "_urac Updated!");
-		}
+
+		//NOTE: indexing is under soajs.urac 
+
+		//TODO: missing index for socialId.facebook.id
+		// only if mongo is 4.3
+		/*
+		__self.mongoCore.createIndex( colName, {"socialId.$**" : 1}, {}, (err, index) => {
+			soajs.log.debug("Index: " + index + " created with error: " + err);
+		});
+		*/
 	}
 }
 
@@ -162,7 +117,7 @@ User.prototype.lastLogin = function (data, cb) {
 			'lastLogin': data.lastLogin
 		}
 	};
-	let condition = {'username': data.username};
+	let condition = { 'username': data.username };
 	let extraOptions = {};
 	__self.mongoCore.updateOne(colName, condition, s, extraOptions, (err, record) => {
 		return cb(err, record);
@@ -192,7 +147,7 @@ User.prototype.getSocialNetworkUser = function (data, cb) {
 	}
 	let c = {};
 	c['socialId.' + data.mode + '.id'] = data.id;
-	
+
 	let condition = {};
 	if (c && e) {
 		condition = {
@@ -222,12 +177,12 @@ User.prototype.updateSocialNetworkUser = function (data, cb) {
 		let error = new Error("user record and _id are required.");
 		return cb(error, null);
 	}
-	
-	let condition = {'_id': data._id};
+
+	let condition = { '_id': data._id };
 	let extraOptions = {
 		'upsert': false
 	};
-	let s = {'$set': data};
+	let s = { '$set': data };
 	__self.mongoCore.updateOne(colName, condition, s, extraOptions, (err, record) => {
 		return cb(err, record);
 	});
@@ -249,7 +204,7 @@ User.prototype.insertSocialNetworkUser = function (data, cb) {
 		let error = new Error("user record is required.");
 		return cb(error, null);
 	}
-	
+
 	__self.mongoCore.insertOne(colName, data, {}, false, (err, record) => {
 		return cb(err, record);
 	});
@@ -267,11 +222,25 @@ User.prototype.insertSocialNetworkUser = function (data, cb) {
 User.prototype.getUserByEmail = function (data, cb) {
 	let __self = this;
 	if (!data || !data.email) {
-		let error = new Error("email and status are required.");
+		let error = new Error("email is required.");
 		return cb(error, null);
 	}
 	let condition = {
 		'email': data.email
+	};
+	__self.mongoCore.findOne(colName, condition, null, (err, records) => {
+		return cb(err, records);
+	});
+};
+
+User.prototype.getUserByPhone = function (data, cb) {
+	let __self = this;
+	if (!data || !data.phone) {
+		let error = new Error("phone is required.");
+		return cb(error, null);
+	}
+	let condition = {
+		'phone': data.phone
 	};
 	__self.mongoCore.findOne(colName, condition, null, (err, records) => {
 		return cb(err, records);
@@ -295,9 +264,9 @@ User.prototype.getUserByUsernameOrId = function (data, cb) {
 	}
 	let condition = {};
 	if (data.id) {
-		condition = {'_id': data.id};
+		condition = { '_id': data.id };
 	} else if (data.username) {
-		condition = {'username': data.username};
+		condition = { 'username': data.username };
 	}
 	__self.mongoCore.findOne(colName, condition, null, (err, record) => {
 		return cb(err, record);
@@ -322,8 +291,8 @@ User.prototype.getUserByPin = function (data, cb) {
 	}
 	let condition = {
 		$or: [
-			{$and: [{'tenant.pin.code': data.pin}, {'tenant.id': data.tId}]},
-			{"config.allowedTenants": {"$elemMatch": {$and: [{'tenant.pin.code': data.pin}, {'tenant.id': data.tId}]}}}
+			{ $and: [{ 'tenant.pin.code': data.pin }, { 'tenant.id': data.tId }] },
+			{ "config.allowedTenants": { "$elemMatch": { $and: [{ 'tenant.pin.code': data.pin }, { 'tenant.id': data.tId }] } } }
 		]
 	};
 	__self.mongoCore.findOne(colName, condition, null, (err, record) => {

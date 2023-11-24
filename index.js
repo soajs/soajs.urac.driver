@@ -250,8 +250,8 @@ let driver = {
 				modelUserObj = new SSOT.user(soajs);
 			}
 			let data = {};
-			if (input.username) {
-				data.username = input.username;
+			if (input.phone) {
+				data.phone = input.phone;
 				resume();
 			} else if (input.id) {
 				data.id = input.id;

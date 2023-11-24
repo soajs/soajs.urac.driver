@@ -14,8 +14,6 @@ const colName = "groups";
 const core = require("soajs.core.modules");
 const Mongo = core.mongo;
 
-let indexing = {};
-
 function Group(soajs, mongoCore) {
 	let __self = this;
 	__self.keepConnectionAlive = false;
@@ -27,7 +25,7 @@ function Group(soajs, mongoCore) {
 	}
 	if (!__self.mongoCore) {
 		let tCode = soajs.tenant.code;
-		
+
 		let masterDB = get(["registry", "custom", "urac", "value", "masterDB"], soajs);
 		if (masterDB) {
 			if (!soajs.registry.coreDB[masterDB]) {
@@ -68,13 +66,8 @@ function Group(soajs, mongoCore) {
 			}
 			__self.mongoCore = new Mongo(soajs.meta.tenantDB(tenantMetaDB, "urac", tCode));
 		}
-		
-		if (indexing && tCode && !indexing[tCode]) {
-			indexing[tCode] = true;
-			__self.mongoCore.createIndex(colName, {"code": 1, 'tenant.id': 1}, {unique: true}, () => {
-			});
-			soajs.log.debug("Indexes @ " + colName + " for " + tCode + "_urac Updated!");
-		}
+
+		//NOTE: indexing is under soajs.urac 
 	}
 }
 
@@ -113,10 +106,10 @@ Group.prototype.getGroups = function (data, cb) {
 		return cb(error, null);
 	}
 	let condition = {
+		"tenant.id": __self.tenantId,
 		"code": {
 			"$in": data.groups
-		},
-		"tenant.id": __self.tenantId
+		}
 	};
 	__self.mongoCore.find(colName, condition, null, (err, records) => {
 		return cb(err, records);
