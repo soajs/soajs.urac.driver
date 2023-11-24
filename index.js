@@ -25,7 +25,7 @@ let SSOT = {};
 
 let driver = {
 	"modelInit": false,
-	
+
 	/**
 	 * Login by pin code
 	 *
@@ -39,7 +39,7 @@ let driver = {
 				return cb(error);
 			}
 			if (!input || !input.pin) {
-				return cb({"code": 403, "msg": driverConfig.errors[403]});
+				return cb({ "code": 403, "msg": driverConfig.errors[403] });
 			}
 			let modelUserObj = null;
 			if (SSOT.userModelObj) {
@@ -47,14 +47,14 @@ let driver = {
 			} else {
 				modelUserObj = new SSOT.user(soajs);
 			}
-			BL.user.find(soajs, {"pin": input.pin, "tId": soajs.tenant.id}, modelUserObj, (error, record) => {
+			BL.user.find(soajs, { "pin": input.pin, "tId": soajs.tenant.id }, modelUserObj, (error, record) => {
 				if (error) {
 					modelUserObj.closeConnection();
 					return cb(error);
 				}
 				if (!record) {
 					modelUserObj.closeConnection();
-					return cb({"code": 403, "msg": driverConfig.errors[403]});
+					return cb({ "code": 403, "msg": driverConfig.errors[403] });
 				}
 				delete record.password;
 				delete record.socialId;
@@ -62,7 +62,7 @@ let driver = {
 				let userTenant = BL.common.checkUserTenantAccess(record, soajs.tenant, soajs.log, autoRoaming);
 				if (!userTenant) {
 					modelUserObj.closeConnection();
-					return cb({"code": 403, "msg": driverConfig.errors[403]});
+					return cb({ "code": 403, "msg": driverConfig.errors[403] });
 				}
 				if (userTenant.groups && Array.isArray(userTenant.groups) && userTenant.groups.length !== 0) {
 					record.groups = userTenant.groups;
@@ -92,7 +92,7 @@ let driver = {
 				} else {
 					returnUser(record);
 				}
-				
+
 				function returnUser(record) {
 					let data = {
 						"username": record.username
@@ -107,7 +107,7 @@ let driver = {
 			});
 		});
 	},
-	
+
 	/**
 	 * Login with username and password
 	 * @param soajs
@@ -128,9 +128,9 @@ let driver = {
 			}
 			let data = {};
 			let pattern = /^(?:[\w!#$%&'*+\-\/=?^`{|}~]+\.)*[\w!#$%&'*+\-\/=?^`{|}~]+@(?:(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9\-](?!\.)){0,61}[a-zA-Z0-9]?\.)+[a-zA-Z0-9](?:[a-zA-Z0-9\-](?!$)){0,61}[a-zA-Z0-9]?)|(?:\[(?:(?:[01]?\d{1,2}|2[0-4]\d|25[0-5])\.){3}(?:[01]?\d{1,2}|2[0-4]\d|25[0-5])]))$/;
-			
+
 			if (!input || !input.username) {
-				return cb({"code": 403, "msg": driverConfig.errors[403]});
+				return cb({ "code": 403, "msg": driverConfig.errors[403] });
 			}
 			if (pattern.test(input.username)) {
 				data.email = input.username;
@@ -144,13 +144,13 @@ let driver = {
 				}
 				if (!record) {
 					modelUserObj.closeConnection();
-					return cb({"code": 403, "msg": driverConfig.errors[403]});
+					return cb({ "code": 403, "msg": driverConfig.errors[403] });
 				}
 				let myConfig = driverConfig;
 				if (soajs.config) {
 					myConfig = soajs.config;
 				}
-				
+
 				let encryptionConfig = {};
 				if (soajs.servicesConfig.hashIterations) {
 					encryptionConfig.hashIterations = soajs.servicesConfig.hashIterations;
@@ -168,14 +168,14 @@ let driver = {
 						encryptionConfig.optionalAlgorithm = optionalAlgorithm;
 					}
 				}
-				
+
 				BL.common.comparePasswd(encryptionConfig, input.password, record.password, myConfig, (err, response) => {
 					if (err || !response) {
 						if (err) {
 							soajs.log.error(err.message);
 						}
 						modelUserObj.closeConnection();
-						return cb({"code": 402, "msg": driverConfig.errors[402]});
+						return cb({ "code": 402, "msg": driverConfig.errors[402] });
 					}
 					delete record.password;
 					delete record.socialId;
@@ -183,7 +183,7 @@ let driver = {
 					let userTenant = BL.common.checkUserTenantAccess(record, soajs.tenant, soajs.log, autoRoaming);
 					if (!userTenant) {
 						modelUserObj.closeConnection();
-						return cb({"code": 403, "msg": driverConfig.errors[403]});
+						return cb({ "code": 403, "msg": driverConfig.errors[403] });
 					}
 					if (userTenant.groups && Array.isArray(userTenant.groups) && userTenant.groups.length !== 0) {
 						record.groups = userTenant.groups;
@@ -213,7 +213,7 @@ let driver = {
 					} else {
 						returnUser(record);
 					}
-					
+
 					function returnUser(record) {
 						let data = {
 							"username": record.username
@@ -229,7 +229,7 @@ let driver = {
 			});
 		});
 	},
-	
+
 	/**
 	 * Get logged in record from database
 	 *
@@ -253,13 +253,16 @@ let driver = {
 			if (input.phone) {
 				data.phone = input.phone;
 				resume();
+			} else if (input.username) {
+				data.username = input.username;
+				resume();
 			} else if (input.id) {
 				data.id = input.id;
 				modelUserObj.validateId(data, (err, _id) => {
 					if (err) {
 						modelUserObj.closeConnection();
 						soajs.log.error(err.message);
-						return cb({"code": 404, "msg": driverConfig.errors[404]});
+						return cb({ "code": 404, "msg": driverConfig.errors[404] });
 					}
 					data.id = _id;
 					resume();
@@ -267,7 +270,7 @@ let driver = {
 			} else {
 				resume();
 			}
-			
+
 			function resume() {
 				BL.user.find(soajs, data, modelUserObj, (error, record) => {
 					if (error) {
@@ -276,14 +279,14 @@ let driver = {
 					}
 					if (!record) {
 						modelUserObj.closeConnection();
-						return cb({"code": 403, "msg": driverConfig.errors[403]});
+						return cb({ "code": 403, "msg": driverConfig.errors[403] });
 					}
 					delete record.password;
 					let autoRoaming = get(["registry", "custom", "urac", "value", "autoRoaming"], soajs);
 					let userTenant = BL.common.checkUserTenantAccess(record, soajs.tenant, soajs.log, autoRoaming);
 					if (!userTenant) {
 						modelUserObj.closeConnection();
-						return cb({"code": 403, "msg": driverConfig.errors[403]});
+						return cb({ "code": 403, "msg": driverConfig.errors[403] });
 					}
 					if (userTenant.groups && Array.isArray(userTenant.groups) && userTenant.groups.length !== 0) {
 						record.groups = userTenant.groups;
@@ -313,7 +316,7 @@ let driver = {
 					} else {
 						returnUser(record);
 					}
-					
+
 					function returnUser(record) {
 						modelUserObj.closeConnection();
 						BL.user.assureConfig(record, (error, record) => {
@@ -324,7 +327,7 @@ let driver = {
 			}
 		});
 	},
-	
+
 	/**
 	 * Save user profile to database
 	 *
@@ -345,21 +348,21 @@ let driver = {
 				modelUserObj = new SSOT.user(soajs);
 			}
 			BL.user.save(soajs, input, modelUserObj, (error, record) => {
-				
+
 				if (record && record.status === "active") {
-					
+
 					let returnUser = (record) => {
 						modelUserObj.closeConnection();
 						BL.user.assureConfig(record, (error, record) => {
 							return cb(null, record);
 						});
 					};
-					
+
 					let autoRoaming = get(["registry", "custom", "urac", "value", "autoRoaming"], soajs);
 					let userTenant = BL.common.checkUserTenantAccess(record, soajs.tenant, soajs.log, autoRoaming);
 					if (!userTenant) {
 						modelUserObj.closeConnection();
-						return cb({"code": 403, "msg": driverConfig.errors[403]});
+						return cb({ "code": 403, "msg": driverConfig.errors[403] });
 					}
 					if (userTenant.groups && Array.isArray(userTenant.groups) && userTenant.groups.length !== 0) {
 						record.groups = userTenant.groups;
@@ -389,20 +392,20 @@ let driver = {
 					} else {
 						returnUser(record);
 					}
-					
+
 				} else if (record && record.status.indexOf("pending") !== -1) {
 					modelUserObj.closeConnection();
 					soajs.log.error("User [" + record.username + "] status is " + record.status);
-					return cb({"code": 405, "msg": driverConfig.errors[405]});
+					return cb({ "code": 405, "msg": driverConfig.errors[405] });
 				} else if (record && record.status === "inactive") {
 					modelUserObj.closeConnection();
 					soajs.log.error("User [" + record.username + "] status is " + record.status);
-					return cb({"code": 406, "msg": driverConfig.errors[406]});
+					return cb({ "code": 406, "msg": driverConfig.errors[406] });
 				} else {
 					modelUserObj.closeConnection();
-					return cb({"code": 403, "msg": driverConfig.errors[403]});
+					return cb({ "code": 403, "msg": driverConfig.errors[403] });
 				}
-				
+
 				/*
 				modelUserObj.closeConnection();
 				return cb(error, record);
@@ -423,9 +426,9 @@ function initBLModel(soajs, cb) {
 	if (driver.modelInit) {
 		return cb(null);
 	}
-	
+
 	// let masterCode = get(["registry", "custom", "urac", "value", "masterCode"], soajs);
-	
+
 	let userModel = __dirname + "/model/" + model + "/user.js";
 	if (fs.existsSync(userModel)) {
 		SSOT.user = require(userModel);
@@ -447,7 +450,7 @@ function initBLModel(soajs, cb) {
 		return cb(null);
 	} else {
 		soajs.log.error('Requested model not found. make sure you have a model for user and another one for group!');
-		return cb({"code": 601, "msg": driverConfig.errors[601]});
+		return cb({ "code": 601, "msg": driverConfig.errors[601] });
 	}
 }
 

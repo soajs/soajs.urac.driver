@@ -147,6 +147,16 @@ describe("Unit test for: urac.driver", function () {
 		});
 	});
 	
+	it("test - getRecord - phone", function (done) {
+		let input = {
+			"phone": "16179010000"
+		};
+		driver.getRecord(soajs, input, (error, record) => {
+			assert.equal(record.email, 'me@localhost.com');
+			id = record._id.toString();
+			done();
+		});
+	});
 	it("test - getRecord - username", function (done) {
 		let input = {
 			"username": "owner"
