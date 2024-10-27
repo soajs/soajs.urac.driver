@@ -23,6 +23,8 @@ let BL = {
 };
 let SSOT = {};
 
+let pattern = /^(?:[\w!#$%&'*+\-\/=?^`{|}~]+\.)*[\w!#$%&'*+\-\/=?^`{|}~]+@(?:(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9\-](?!\.)){0,61}[a-zA-Z0-9]?\.)+[a-zA-Z0-9](?:[a-zA-Z0-9\-](?!$)){0,61}[a-zA-Z0-9]?)|(?:\[(?:(?:[01]?\d{1,2}|2[0-4]\d|25[0-5])\.){3}(?:[01]?\d{1,2}|2[0-4]\d|25[0-5])]))$/;
+
 let driver = {
 	"modelInit": false,
 
@@ -127,7 +129,6 @@ let driver = {
 				modelUserObj = new SSOT.user(soajs);
 			}
 			let data = {};
-			let pattern = /^(?:[\w!#$%&'*+\-\/=?^`{|}~]+\.)*[\w!#$%&'*+\-\/=?^`{|}~]+@(?:(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9\-](?!\.)){0,61}[a-zA-Z0-9]?\.)+[a-zA-Z0-9](?:[a-zA-Z0-9\-](?!$)){0,61}[a-zA-Z0-9]?)|(?:\[(?:(?:[01]?\d{1,2}|2[0-4]\d|25[0-5])\.){3}(?:[01]?\d{1,2}|2[0-4]\d|25[0-5])]))$/;
 
 			if (!input || !input.username) {
 				return cb({ "code": 403, "msg": driverConfig.errors[403] });
@@ -254,7 +255,12 @@ let driver = {
 				data.phone = input.phone;
 				resume();
 			} else if (input.username) {
-				data.username = input.username;
+				if (pattern.test(input.username)) {
+					data.email = input.username;
+				} else {
+					data.username = input.username;
+				}
+				// data.username = input.username;
 				resume();
 			} else if (input.id) {
 				data.id = input.id;
