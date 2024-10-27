@@ -1,7 +1,7 @@
 {
   "name": "soajs.urac.driver",
   "description": "soajs URAC Driver",
-  "version": "3.2.8",
+  "version": "3.2.9",
   "author": {
     "name": "soajs team",
     "email": "team@soajs.org"
@@ -31,7 +31,7 @@
     "shelljs": "0.8.5"
   },
   "dependencies": {
-    "async": "3.2.5",
-    "soajs.core.modules": "5.2.11"
+    "async": "3.2.6",
+    "soajs.core.modules": "5.2.12"
   }
 }
