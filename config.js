@@ -20,6 +20,7 @@ module.exports = {
 		404: "Unable to log in. Credential error or mismatch",
 		405: "Unable to log in the user. User has not activated this account",
 		406: "Unable to log in the user. User is inactive",
+		407: "User does not have access to the tenant",
 		601: "Model not found"
 	}
 };
