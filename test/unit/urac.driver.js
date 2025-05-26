@@ -63,7 +63,7 @@ describe("Unit test for: urac.driver", function () {
 		};
 		soajs.tenant.id = "9999999999";
 		driver.login(soajs, input, (error) => {
-			assert.equal(error.code, "403");
+			assert.equal(error.code, "407");
 			done();
 		});
 	});
@@ -191,7 +191,7 @@ describe("Unit test for: urac.driver", function () {
 		};
 		soajs.tenant.id = "9999999999";
 		driver.getRecord(soajs, input, (error) => {
-			assert.equal(error.code, "403");
+			assert.equal(error.code, "407");
 			done();
 		});
 	});

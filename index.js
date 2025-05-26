@@ -64,7 +64,7 @@ let driver = {
 				let userTenant = BL.common.checkUserTenantAccess(record, soajs.tenant, soajs.log, autoRoaming);
 				if (!userTenant) {
 					modelUserObj.closeConnection();
-					return cb({ "code": 403, "msg": driverConfig.errors[403] });
+					return cb({ "code": 407, "msg": driverConfig.errors[407] });
 				}
 				if (userTenant.groups && Array.isArray(userTenant.groups) && userTenant.groups.length !== 0) {
 					record.groups = userTenant.groups;
@@ -184,7 +184,7 @@ let driver = {
 					let userTenant = BL.common.checkUserTenantAccess(record, soajs.tenant, soajs.log, autoRoaming);
 					if (!userTenant) {
 						modelUserObj.closeConnection();
-						return cb({ "code": 403, "msg": driverConfig.errors[403] });
+						return cb({ "code": 407, "msg": driverConfig.errors[407] });
 					}
 					if (userTenant.groups && Array.isArray(userTenant.groups) && userTenant.groups.length !== 0) {
 						record.groups = userTenant.groups;
@@ -273,6 +273,8 @@ let driver = {
 					data.id = _id;
 					resume();
 				});
+			} else if (input._id) {
+				data.id = input._id;
 			} else {
 				resume();
 			}
@@ -292,7 +294,7 @@ let driver = {
 					let userTenant = BL.common.checkUserTenantAccess(record, soajs.tenant, soajs.log, autoRoaming);
 					if (!userTenant) {
 						modelUserObj.closeConnection();
-						return cb({ "code": 403, "msg": driverConfig.errors[403] });
+						return cb({ "code": 407, "msg": driverConfig.errors[407] });
 					}
 					if (userTenant.groups && Array.isArray(userTenant.groups) && userTenant.groups.length !== 0) {
 						record.groups = userTenant.groups;
@@ -368,7 +370,7 @@ let driver = {
 					let userTenant = BL.common.checkUserTenantAccess(record, soajs.tenant, soajs.log, autoRoaming);
 					if (!userTenant) {
 						modelUserObj.closeConnection();
-						return cb({ "code": 403, "msg": driverConfig.errors[403] });
+						return cb({ "code": 407, "msg": driverConfig.errors[407] });
 					}
 					if (userTenant.groups && Array.isArray(userTenant.groups) && userTenant.groups.length !== 0) {
 						record.groups = userTenant.groups;
