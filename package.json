@@ -1,7 +1,7 @@
 {
   "name": "soajs.urac.driver",
   "description": "soajs URAC Driver",
-  "version": "3.2.11",
+  "version": "3.2.12",
   "author": {
     "name": "soajs team",
     "email": "team@soajs.org"
@@ -27,11 +27,11 @@
     "grunt-istanbul": "0.8.0",
     "grunt-jsdoc": "2.4.1",
     "grunt-mocha-test": "0.13.3",
-    "mocha": "11.1.0",
-    "shelljs": "0.9.2"
+    "mocha": "11.5.0",
+    "shelljs": "0.10.0"
   },
   "dependencies": {
     "async": "3.2.6",
-    "soajs.core.modules": "5.2.14"
+    "soajs.core.modules": "5.2.15"
   }
 }
