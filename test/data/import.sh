@@ -1,9 +1,9 @@
 #!/bin/bash
 
 pushd ./urac
-mongo ./TES0_groups.js
-mongo ./TES1_groups.js
-mongo ./TES2_groups.js
+mongosh ./TES0_groups.js
+mongosh ./TES1_groups.js
+mongosh ./TES2_groups.js
 
-mongo ./TES0_users.js
+mongosh ./TES0_users.js
 popd
