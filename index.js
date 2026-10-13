@@ -66,6 +66,12 @@ let driver = {
 					modelUserObj.closeConnection();
 					return cb({ "code": 407, "msg": driverConfig.errors[407] });
 				}
+				//NOTE: access through another tenant (allowedTenants or autoRoaming) must carry that tenant and only
+				//		the groups granted there, even none, never the home tenant groups
+				if (userTenant.tenant !== record.tenant) {
+					record.tenant = userTenant.tenant;
+					record.groups = Array.isArray(userTenant.groups) ? userTenant.groups : [];
+				}
 				if (userTenant.groups && Array.isArray(userTenant.groups) && userTenant.groups.length !== 0) {
 					record.groups = userTenant.groups;
 					record.tenant = userTenant.tenant;
@@ -186,6 +192,12 @@ let driver = {
 						modelUserObj.closeConnection();
 						return cb({ "code": 407, "msg": driverConfig.errors[407] });
 					}
+					//NOTE: access through another tenant (allowedTenants or autoRoaming) must carry that tenant and only
+					//		the groups granted there, even none, never the home tenant groups
+					if (userTenant.tenant !== record.tenant) {
+						record.tenant = userTenant.tenant;
+						record.groups = Array.isArray(userTenant.groups) ? userTenant.groups : [];
+					}
 					if (userTenant.groups && Array.isArray(userTenant.groups) && userTenant.groups.length !== 0) {
 						record.groups = userTenant.groups;
 						record.tenant = userTenant.tenant;
@@ -296,6 +308,12 @@ let driver = {
 						modelUserObj.closeConnection();
 						return cb({ "code": 407, "msg": driverConfig.errors[407] });
 					}
+					//NOTE: access through another tenant (allowedTenants or autoRoaming) must carry that tenant and only
+					//		the groups granted there, even none, never the home tenant groups
+					if (userTenant.tenant !== record.tenant) {
+						record.tenant = userTenant.tenant;
+						record.groups = Array.isArray(userTenant.groups) ? userTenant.groups : [];
+					}
 					if (userTenant.groups && Array.isArray(userTenant.groups) && userTenant.groups.length !== 0) {
 						record.groups = userTenant.groups;
 						record.tenant = userTenant.tenant;
@@ -371,6 +389,12 @@ let driver = {
 					if (!userTenant) {
 						modelUserObj.closeConnection();
 						return cb({ "code": 407, "msg": driverConfig.errors[407] });
+					}
+					//NOTE: access through another tenant (allowedTenants or autoRoaming) must carry that tenant and only
+					//		the groups granted there, even none, never the home tenant groups
+					if (userTenant.tenant !== record.tenant) {
+						record.tenant = userTenant.tenant;
+						record.groups = Array.isArray(userTenant.groups) ? userTenant.groups : [];
 					}
 					if (userTenant.groups && Array.isArray(userTenant.groups) && userTenant.groups.length !== 0) {
 						record.groups = userTenant.groups;
