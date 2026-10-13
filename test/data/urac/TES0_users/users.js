@@ -49,6 +49,13 @@ let records = [
                     groups: [
                         "manager"
                     ]
+                },
+                {
+                    tenant: {
+                        id: "5c0e74ba9acc3c5a84a51253",
+                        code: "TES3"
+                    },
+                    groups: []
                 }
             ]
         },

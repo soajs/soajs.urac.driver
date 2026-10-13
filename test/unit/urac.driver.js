@@ -214,4 +214,46 @@ describe("Unit test for: urac.driver", function () {
 			done();
 		});
 	});
+
+	describe("invited to a sub tenant with no groups", function () {
+		let subTenant = {
+			"id": "5c0e74ba9acc3c5a84a51253",
+			"code": "TES3",
+			"main": {
+				"code": "TES0",
+				"id": "5c0e74ba9acc3c5a84a51259"
+			}
+		};
+		let subSoajs = null;
+		// the driver calls back from inside a promise, so a failed assert would be
+		// swallowed and the test would time out; hand the failure to done instead
+		let check = (done, error, record) => {
+			try {
+				assert.ifError(error);
+				assert.equal(record.tenant.id, subTenant.id);
+				assert.deepStrictEqual(record.groups, []);
+				done();
+			} catch (e) {
+				done(e);
+			}
+		};
+		before(function () {
+			subSoajs = Object.assign({}, soajs, { "tenant": subTenant });
+			subSoajs.servicesConfig.urac.model = "mongo";
+		});
+		it("test - login - gets the invited tenant, not the home tenant groups", function (done) {
+			let input = {
+				"username": "owner",
+				"password": "password"
+			};
+			driver.login(subSoajs, input, (error, record) => {
+				check(done, error, record);
+			});
+		});
+		it("test - getRecord - gets the invited tenant, not the home tenant groups", function (done) {
+			driver.getRecord(subSoajs, { "username": "owner" }, (error, record) => {
+				check(done, error, record);
+			});
+		});
+	});
 });
