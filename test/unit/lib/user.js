@@ -274,4 +274,124 @@ describe("Unit test for: lib - user", function () {
 		modelUserObj.closeConnection();
 		done();
 	});
+
+	describe("social login email linking", function () {
+		let calls = null;
+		let bySocialId = null;
+		let byEmail = null;
+		let stubModel = {
+			"getSocialNetworkUser": (data, cb) => {
+				calls.push({ "op": "getSocialNetworkUser", data });
+				if (data.email && byEmail) {
+					return cb(null, JSON.parse(JSON.stringify(byEmail)));
+				}
+				return cb(null, bySocialId ? JSON.parse(JSON.stringify(bySocialId)) : null);
+			},
+			"getUserByEmail": (data, cb) => {
+				calls.push({ "op": "getUserByEmail", data });
+				return cb(null, byEmail);
+			},
+			"updateSocialNetworkUser": (record, cb) => {
+				calls.push({ "op": "updateSocialNetworkUser", record });
+				return cb(null, 1);
+			},
+			"insertSocialNetworkUser": (record, cb) => {
+				calls.push({ "op": "insertSocialNetworkUser", record });
+				return cb(null, [Object.assign({ "_id": "new_id" }, record)]);
+			}
+		};
+		let victim = {
+			"_id": "victim_id",
+			"username": "victim",
+			"email": "victim@example.com",
+			"groups": ["owner"],
+			"tenant": { "id": "5c0e74ba9acc3c5a84a51259", "code": "TES0" }
+		};
+		let attacker = (emailVerified) => {
+			let user = {
+				"firstName": "attacker",
+				"lastName": "attacker",
+				"email": "victim@example.com",
+				"username": "attacker_google_sub_123",
+				"id": "attacker_google_sub_123",
+				"accessToken": "attacker_access",
+				"refreshToken": "attacker_refresh"
+			};
+			if (emailVerified !== undefined) {
+				user.emailVerified = emailVerified;
+			}
+			return { "user": user, "mode": "google" };
+		};
+		// the callback runs inside the stub, a failed assert would be swallowed, hand it to done
+		let check = (done, fn) => {
+			try {
+				fn();
+				done();
+			} catch (e) {
+				done(e);
+			}
+		};
+
+		beforeEach(() => {
+			calls = [];
+			bySocialId = null;
+			byEmail = null;
+		});
+
+		it("an unverified email does not take over the account that owns it", function (done) {
+			byEmail = victim;
+			BL.save(soajs, attacker(false), stubModel, (error, record) => {
+				check(done, () => {
+					assert.ok(error);
+					assert.equal(error.code, 408);
+					assert.equal(record, undefined);
+					assert.deepStrictEqual(calls[0].data, { "id": "attacker_google_sub_123", "mode": "google" });
+					assert.ok(!calls.some((c) => c.op === "updateSocialNetworkUser" || c.op === "insertSocialNetworkUser"));
+				});
+			});
+		});
+
+		it("an email without the verified flag is treated as unverified", function (done) {
+			byEmail = victim;
+			BL.save(soajs, attacker(), stubModel, (error) => {
+				check(done, () => {
+					assert.equal(error.code, 408);
+					assert.ok(!calls.some((c) => c.op === "updateSocialNetworkUser"));
+				});
+			});
+		});
+
+		it("a verified email links the login to the account that owns it", function (done) {
+			byEmail = victim;
+			BL.save(soajs, attacker(true), stubModel, (error, record) => {
+				check(done, () => {
+					assert.ifError(error);
+					assert.equal(calls[0].data.email, "victim@example.com");
+					assert.equal(record._id, "victim_id");
+					assert.equal(record.socialId.google.id, "attacker_google_sub_123");
+				});
+			});
+		});
+
+		it("a login already linked is found by its provider id, whatever its email", function (done) {
+			bySocialId = Object.assign({}, victim, { "socialId": { "google": { "id": "attacker_google_sub_123" } } });
+			BL.save(soajs, attacker(false), stubModel, (error, record) => {
+				check(done, () => {
+					assert.ifError(error);
+					assert.equal(record._id, "victim_id");
+					assert.ok(!calls.some((c) => c.op === "getUserByEmail"));
+				});
+			});
+		});
+
+		it("a new login with an unverified email no account uses creates its account", function (done) {
+			BL.save(soajs, attacker(false), stubModel, (error, record) => {
+				check(done, () => {
+					assert.ifError(error);
+					assert.equal(record._id, "new_id");
+					assert.deepStrictEqual(calls.map((c) => c.op), ["getSocialNetworkUser", "getUserByEmail", "insertSocialNetworkUser"]);
+				});
+			});
+		});
+	});
 });
