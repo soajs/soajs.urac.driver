@@ -215,6 +215,57 @@ describe("Unit test for: urac.driver", function () {
 		});
 	});
 
+	describe("social login with the email of an existing account", function () {
+		let profile = (emailVerified) => {
+			return {
+				"user": {
+					"firstName": "attacker",
+					"lastName": "attacker",
+					"email": "me@localhost.com",
+					"username": "attacker_google_sub_123",
+					"id": "attacker_google_sub_123",
+					"emailVerified": emailVerified,
+					"accessToken": "attacker_access",
+					"refreshToken": "attacker_refresh"
+				},
+				"mode": "google"
+			};
+		};
+		// the driver calls back from inside a promise, a failed assert would be swallowed
+		let check = (done, fn) => {
+			try {
+				fn();
+				done();
+			} catch (e) {
+				done(e);
+			}
+		};
+
+		// earlier tests move soajs to other tenants, the owner lives in TES0
+		let ownerSoajs = () => Object.assign({}, soajs, { "tenant": { "code": "TES0", "id": "5c0e74ba9acc3c5a84a51259" } });
+
+		it("an unverified email is refused and the owner account is not linked", function (done) {
+			driver.saveUser(ownerSoajs(), profile(false), (error, record) => {
+				check(done, () => {
+					//NOTE: the caller gets the generic login error, it does not tell whether an account uses the email
+					assert.ok(error);
+					assert.equal(error.code, 403);
+					assert.ok(!record);
+				});
+			});
+		});
+
+		it("the owner account still has no google login linked", function (done) {
+			driver.getRecord(ownerSoajs(), { "username": "owner" }, (error, record) => {
+				check(done, () => {
+					assert.ifError(error);
+					assert.equal(record.email, "me@localhost.com");
+					assert.ok(!record.socialId || !record.socialId.google);
+				});
+			});
+		});
+	});
+
 	describe("invited to a sub tenant with no groups", function () {
 		let subTenant = {
 			"id": "5c0e74ba9acc3c5a84a51253",
