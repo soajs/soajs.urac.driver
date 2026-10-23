@@ -21,6 +21,7 @@ module.exports = {
 		405: "Unable to log in the user. User has not activated this account",
 		406: "Unable to log in the user. User is inactive",
 		407: "User does not have access to the tenant",
+		408: "Unable to log in. This login is not linked to an account, and its email is not verified by the provider",
 		601: "Model not found"
 	}
 };
